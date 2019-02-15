@@ -509,7 +509,7 @@ let viewHandler (vs : viewState) (h : handler) : msg Html.html list =
   let showRail = AST.usesRail h.ast in
   let ast =
     Html.div
-      [Html.class' "handler-body"]
+      [Html.class' "handler-body preview"]
       [ Html.div [Html.class' "ast"] [viewExpr 0 vs [] h.ast]
       ; Html.div [Html.classList [("rop-rail", true); ("active", showRail)]] []
       ]

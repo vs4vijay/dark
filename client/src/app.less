@@ -70,6 +70,16 @@ html {
 }
  .animation-keyframes(colors, @red, @grey3, db-lock-hover, 1s 1 normal);
 
+ @-webkit-keyframes unblur {
+   0%  { -webkit-filter: blur(2px); }
+   100% { -webkit-filter: blur(0); }
+ }
+
+ @-webkit-keyframes blur {
+   0%  { -webkit-filter: blur(0); }
+   100% { -webkit-filter: blur(2px); }
+ }
+
  /* Body */
 
 ::-webkit-scrollbar {
@@ -420,7 +430,7 @@ body #grid * {
 
     .button-link, .external {
       .default-link;
-      
+
       display: inline-block;
       width: 16px;
       margin: 0 2px;
@@ -470,7 +480,7 @@ body #grid * {
       display: inline-block;
       text-align: right;
       margin-right: 4px;
-      
+
       &.verb-link {
         text-decoration: none;
       }
@@ -775,6 +785,17 @@ body #grid * {
   flex-wrap: nowrap;
   align-items: stretch;
 
+  &.preview {
+    max-width: 500px;
+    max-height: 100px;
+    overflow: hidden;
+
+    & > .ast {
+      position: relative;
+      filter: blur(2px);
+    }
+  }
+
   .ast, .rop-rail {
     display: inline-block;
     vertical-align: top;
@@ -815,6 +836,16 @@ body #grid * {
 }
 
 
+.sidebar-box:not(.dragging) .selected.toplevel .handler-body.preview {
+
+  max-width: none;
+  max-height: none;
+  overflow: auto;
+
+  & > .ast {
+    filter: blur(0);
+  }
+}
 
 //*************
 // AST macros
