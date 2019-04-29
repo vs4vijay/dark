@@ -6,8 +6,13 @@ module Navigation = Tea.Navigation
 module TL = Toplevel
 
 let hashUrlParams (params : (string * string) list) : string =
-  let merged = List.map ~f:(fun (k, v) -> k ^ "=" ^ v) params in
-  "#" ^ String.join ~sep:"&" merged
+  if List.isEmpty params
+  then
+    " "
+    (* For some reason "" does not update; also " " will not add the extra space and just clears to default path *)
+  else
+    let merged = List.map ~f:(fun (k, v) -> k ^ "=" ^ v) params in
+    "#" ^ String.join ~sep:"&" merged
 
 
 let urlFor (page : page) : string =
