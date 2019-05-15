@@ -896,8 +896,9 @@ let update_ (msg : msg) (m : model) : modification =
       SetHover (tlid, id)
   | BlankOrMouseLeave (tlid, id, _) ->
       ClearHover (tlid, id)
-  | MouseWheel (x, y) ->
-      if m.canvasProps.enablePan then Viewport.moveCanvasBy m x y else NoChange
+  | MouseWheel (_x, _y) ->
+    NoChange
+      (* if m.canvasProps.enablePan then Viewport.moveCanvasBy m x y else NoChange *)
   | TraceMouseEnter (tlid, traceID, _) ->
       let traceCmd =
         match Analysis.getTrace m tlid traceID with
