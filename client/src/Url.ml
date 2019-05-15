@@ -177,7 +177,9 @@ let calculatePanOffset (m : model) (tl : toplevel) (page : page) : model =
     then Viewport.centerCanvasOn tl m.canvasProps
     else m.canvasProps.offset
   in
-  let panAnimation = offset <> m.canvasProps.offset in
+  let dx = abs (m.canvasProps.offset.x - offset.x) in
+  let dy = abs (m.canvasProps.offset.y - offset.y) in
+  let panAnimation = dx > 20 || dy > 20 in
   let boId =
     let idInToplevel id =
       match TL.find tl id with Some _ -> Some id | None -> None
