@@ -459,6 +459,7 @@ let rec updateMod (mod_ : modification) ((m, cmd) : model * msg Cmd.t) :
         let newM = {m with cursorState} in
         (newM, Entry.focusEntry newM)
     | SetPage page ->
+        Debug.loG "SetPage" page;
         (Url.setPage m m.currentPage page, Cmd.none)
     | Select (tlid, p) ->
         let hashCmd = Url.shouldUpdateHash m tlid in
