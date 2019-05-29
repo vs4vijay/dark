@@ -1556,6 +1556,10 @@ let convertPatternIntToFloat
       | _ ->
           fail "Not an int" )
 
+let convertToAndSt (str: string) (id: id) (ast : ast) : ast =
+  wrap id ast ~f:(fun _expr ->
+    EBinOp (gid(), "&&", (EPartial (gid (), str)), newB (), NoRail )
+  )
 
 let removePointFromFloat (id : id) (ast : ast) : ast =
   wrap id ast ~f:(fun expr ->
@@ -2200,7 +2204,6 @@ let maybeOpenCmd (m : Types.model) : Types.modification =
                 Some (FluidCommandsFor (tl.id, id)) ) )
   |> Option.withDefault ~default:NoChange
 
-
 let updateKey (key : K.key) (ast : ast) (s : state) : ast * state =
   let pos = s.newPos in
   let keyChar = K.toChar key in
@@ -2343,6 +2346,13 @@ let updateKey (key : K.key) (ast : ast) (s : state) : ast * state =
       when onEdge ->
         ( convertToBinOp keyChar (Token.tid toTheLeft.token) ast
         , s |> moveTo (pos + 3) )
+    | K.Ampersand, L (TPartial (id, str), toTheLeft), _
+      when isAppendable toTheLeft.token ->
+      if Regex.exactly ~re:".+&" str
+      then 
+        let strExpr = String.dropRight ~count:1 str in
+        (convertToAndSt strExpr id ast, s)
+      else (doInsert ~pos keyChar toTheLeft ast s)
     (* End of line *)
     | K.Enter, _, R (TNewline, _) ->
         (ast, moveOneRight pos s)
