@@ -1416,7 +1416,6 @@ let replaceStringToken ~(f : string -> string) (token : token) (ast : ast) :
   | _ ->
       fail "not supported by replaceToken"
 
-
 let replaceFloatWhole (str : string) (id : id) (ast : ast) : fluidExpr =
   wrap id ast ~f:(fun expr ->
       match expr with
@@ -1557,9 +1556,9 @@ let convertPatternIntToFloat
       | _ ->
           fail "Not an int" )
 
-let convertToAndSt (str: string) (id: id) (ast : ast) : ast =
+let convertToAndSt (id: id) (ast : ast) : ast =
   wrap id ast ~f:(fun expr ->
-    EBinOp (gid(), "&&", replaceString str id expr , newB (), NoRail )
+    EBinOp (gid(), "&&", expr , newB (), NoRail )
   )
 
 let removePointFromFloat (id : id) (ast : ast) : ast =
@@ -2024,6 +2023,64 @@ let doDown ~(pos : int) (ast : ast) (s : state) : state =
 
 let isRealCharacter (letter : string) : bool = String.length letter = 1
 
+let tokenToExpr (token: token) : fluidExpr =
+  match token with
+  | TTrue id -> EBool (id, true)
+  | TFalse id -> EBool (id, false)
+  | _ -> EPartial (gid(), "")
+  (* TODO(alice) handle the rest of the cases
+  | TInteger of id * string
+  | TString of id * string
+  | TBlank of id
+  | TPlaceholder of placeholder * id
+  | TNullToken of id
+  | TFloatWhole of id * string
+  | TFloatPoint of id
+  | TFloatFraction of id * string
+  | TPartial of id * string
+  | TSep
+  | TNewline
+  | TIndentToHere of fluidToken list
+  | TIndented of fluidToken list
+  | TIndent of int
+  | TLetKeyword of id
+  | TLetLHS of id * string
+  | TLetAssignment of id
+  | TIfKeyword of id
+  | TIfThenKeyword of id
+  | TIfElseKeyword of id
+  | TBinOp of id * string
+  | TFieldOp of id
+  | TFieldName of id * string
+  | TVariable of id * string
+  | TFnName of id * string * sendToRail
+  | TLambdaSep of id
+  | TLambdaArrow of id
+  | TLambdaSymbol of id
+  | TLambdaVar of id * int * string
+  | TListOpen of id
+  | TListClose of id
+  | TListSep of id
+  | TThreadPipe of id * int
+  | TRecordOpen of id
+  | TRecordField of id * int * string
+  | TRecordSep of id * int
+  | TMatchKeyword of id
+  | TMatchSep of id
+  | TPatternVariable of id * id * string
+  | TPatternConstructorName of id * id * string
+  | TPatternInteger of id * id * string
+  | TPatternString of id * id * string
+  | TPatternTrue of id * id
+  | TPatternFalse of id * id
+  | TPatternNullToken of id * id
+  | TPatternFloatWhole of id * id * string
+  | TPatternFloatPoint of id * id
+  | TPatternFloatFraction of id * id * string
+  | TPatternBlank of id * id
+  | TRecordClose of id
+  | TConstructorName of id * string *)
+
 let doInsert' ~pos (letter : char) (ti : tokenInfo) (ast : ast) (s : state) :
     ast * state =
   let s = recordAction "doInsert" s in
@@ -2347,13 +2404,16 @@ let updateKey (key : K.key) (ast : ast) (s : state) : ast * state =
       when onEdge ->
         ( convertToBinOp keyChar (Token.tid toTheLeft.token) ast
         , s |> moveTo (pos + 3) )
-    | K.Ampersand, L (TPartial (id, str), toTheLeft), _
+    (* | K.Ampersand, L (TPartial (id, str), toTheLeft), _
       when isAppendable toTheLeft.token ->
       if Regex.exactly ~re:".+&" str
       then 
         let strExpr = String.dropRight ~count:1 str in
         (convertToAndSt strExpr id ast, s |> moveTo (pos + 3))
-      else (doInsert ~pos keyChar toTheLeft ast s)
+      else (doInsert ~pos keyChar toTheLeft ast s) *)
+
+    | K.Ampersand, L (leftToken, _), _ when onEdge ->
+        (convertToAndSt (Token.tid leftToken) ast, s |> moveTo (pos + 3))
     (* End of line *)
     | K.Enter, _, R (TNewline, _) ->
         (ast, moveOneRight pos s)
