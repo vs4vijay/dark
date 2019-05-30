@@ -1289,6 +1289,7 @@ let removeEmptyExpr (id : id) (ast : ast) : ast =
 
 let replaceFieldName (str : string) (id : id) (ast : ast) : ast =
   wrap id ast ~f:(fun e ->
+      Debug.loG "replaceString" e;
       match e with
       | EFieldAccess (id, expr, fieldID, _) ->
           EFieldAccess (id, expr, fieldID, str)
@@ -1557,8 +1558,8 @@ let convertPatternIntToFloat
           fail "Not an int" )
 
 let convertToAndSt (str: string) (id: id) (ast : ast) : ast =
-  wrap id ast ~f:(fun _expr ->
-    EBinOp (gid(), "&&", (EPartial (gid (), str)), newB (), NoRail )
+  wrap id ast ~f:(fun expr ->
+    EBinOp (gid(), "&&", replaceString str id expr , newB (), NoRail )
   )
 
 let removePointFromFloat (id : id) (ast : ast) : ast =
@@ -2351,7 +2352,7 @@ let updateKey (key : K.key) (ast : ast) (s : state) : ast * state =
       if Regex.exactly ~re:".+&" str
       then 
         let strExpr = String.dropRight ~count:1 str in
-        (convertToAndSt strExpr id ast, s)
+        (convertToAndSt strExpr id ast, s |> moveTo (pos + 3))
       else (doInsert ~pos keyChar toTheLeft ast s)
     (* End of line *)
     | K.Enter, _, R (TNewline, _) ->
