@@ -1556,10 +1556,20 @@ let convertPatternIntToFloat
       | _ ->
           fail "Not an int" )
 
-let convertToAndSt (id: id) (ast : ast) : ast =
+let convertToAnd (id: id) (ast : ast) : ast =
   wrap id ast ~f:(fun expr ->
     EBinOp (gid(), "&&", expr , newB (), NoRail )
   )
+
+let convertToOr (id: id) (ast : ast) : ast =
+    wrap id ast ~f:(fun expr ->
+        EBinOp (gid(), "||", expr , newB (), NoRail )
+    )
+
+let convertToAppend (id: id) (ast : ast) : ast =
+    wrap id ast ~f:(fun expr ->
+        EBinOp (gid(), "++", expr , newB (), NoRail )
+    )
 
 let removePointFromFloat (id : id) (ast : ast) : ast =
   wrap id ast ~f:(fun expr ->
@@ -2394,6 +2404,8 @@ let updateKey (key : K.key) (ast : ast) (s : state) : ast * state =
         let offset = pos - ti.startPos in
         (convertPatternIntToFloat offset mID id ast, moveOneRight pos s)
     (* Binop specific *)
+    | K.Plus, L (_, toTheLeft), _ when Token.isTokenInfoString toTheLeft && onEdge ->
+        (convertToAppend (Token.tid toTheLeft.token) ast, s |> moveTo (pos + 4))
     | K.Percent, L (_, toTheLeft), _
     | K.Minus, L (_, toTheLeft), _
     | K.Plus, L (_, toTheLeft), _
@@ -2404,16 +2416,10 @@ let updateKey (key : K.key) (ast : ast) (s : state) : ast * state =
       when onEdge ->
         ( convertToBinOp keyChar (Token.tid toTheLeft.token) ast
         , s |> moveTo (pos + 3) )
-    (* | K.Ampersand, L (TPartial (id, str), toTheLeft), _
-      when isAppendable toTheLeft.token ->
-      if Regex.exactly ~re:".+&" str
-      then 
-        let strExpr = String.dropRight ~count:1 str in
-        (convertToAndSt strExpr id ast, s |> moveTo (pos + 3))
-      else (doInsert ~pos keyChar toTheLeft ast s) *)
-
     | K.Ampersand, L (leftToken, _), _ when onEdge ->
-        (convertToAndSt (Token.tid leftToken) ast, s |> moveTo (pos + 3))
+        (convertToAnd (Token.tid leftToken) ast, s |> moveTo (pos + 4))
+    | K.Pipe, L (leftToken, _), _ when onEdge ->
+        (convertToOr (Token.tid leftToken) ast, s |> moveTo (pos + 4))
     (* End of line *)
     | K.Enter, _, R (TNewline, _) ->
         (ast, moveOneRight pos s)
