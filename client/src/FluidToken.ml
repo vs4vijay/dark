@@ -397,8 +397,10 @@ let toCssClasses (t : token) : string =
   ^ " fluid-"
   ^ toTypeName t
 
+
 let isTokenInfoString (ti : tokenInfo) : bool =
-    match ti.token with TString _ -> true | _ -> false
+  match ti.token with TString _ -> true | _ -> false
+
 
 let show_tokenInfo (ti : tokenInfo) =
   Printf.sprintf

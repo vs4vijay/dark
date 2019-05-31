@@ -1289,7 +1289,7 @@ let removeEmptyExpr (id : id) (ast : ast) : ast =
 
 let replaceFieldName (str : string) (id : id) (ast : ast) : ast =
   wrap id ast ~f:(fun e ->
-      Debug.loG "replaceString" e;
+      Debug.loG "replaceString" e ;
       match e with
       | EFieldAccess (id, expr, fieldID, _) ->
           EFieldAccess (id, expr, fieldID, str)
@@ -1415,6 +1415,7 @@ let replaceStringToken ~(f : string -> string) (token : token) (ast : ast) :
       replaceExpr id ~newExpr ast
   | _ ->
       fail "not supported by replaceToken"
+
 
 let replaceFloatWhole (str : string) (id : id) (ast : ast) : fluidExpr =
   wrap id ast ~f:(fun expr ->
@@ -1556,20 +1557,18 @@ let convertPatternIntToFloat
       | _ ->
           fail "Not an int" )
 
-let convertToAnd (id: id) (ast : ast) : ast =
-  wrap id ast ~f:(fun expr ->
-    EBinOp (gid(), "&&", expr , newB (), NoRail )
-  )
 
-let convertToOr (id: id) (ast : ast) : ast =
-    wrap id ast ~f:(fun expr ->
-        EBinOp (gid(), "||", expr , newB (), NoRail )
-    )
+let convertToAnd (id : id) (ast : ast) : ast =
+  wrap id ast ~f:(fun expr -> EBinOp (gid (), "&&", expr, newB (), NoRail))
 
-let convertToAppend (id: id) (ast : ast) : ast =
-    wrap id ast ~f:(fun expr ->
-        EBinOp (gid(), "++", expr , newB (), NoRail )
-    )
+
+let convertToOr (id : id) (ast : ast) : ast =
+  wrap id ast ~f:(fun expr -> EBinOp (gid (), "||", expr, newB (), NoRail))
+
+
+let convertToAppend (id : id) (ast : ast) : ast =
+  wrap id ast ~f:(fun expr -> EBinOp (gid (), "++", expr, newB (), NoRail))
+
 
 let removePointFromFloat (id : id) (ast : ast) : ast =
   wrap id ast ~f:(fun expr ->
@@ -2033,64 +2032,6 @@ let doDown ~(pos : int) (ast : ast) (s : state) : state =
 
 let isRealCharacter (letter : string) : bool = String.length letter = 1
 
-let tokenToExpr (token: token) : fluidExpr =
-  match token with
-  | TTrue id -> EBool (id, true)
-  | TFalse id -> EBool (id, false)
-  | _ -> EPartial (gid(), "")
-  (* TODO(alice) handle the rest of the cases
-  | TInteger of id * string
-  | TString of id * string
-  | TBlank of id
-  | TPlaceholder of placeholder * id
-  | TNullToken of id
-  | TFloatWhole of id * string
-  | TFloatPoint of id
-  | TFloatFraction of id * string
-  | TPartial of id * string
-  | TSep
-  | TNewline
-  | TIndentToHere of fluidToken list
-  | TIndented of fluidToken list
-  | TIndent of int
-  | TLetKeyword of id
-  | TLetLHS of id * string
-  | TLetAssignment of id
-  | TIfKeyword of id
-  | TIfThenKeyword of id
-  | TIfElseKeyword of id
-  | TBinOp of id * string
-  | TFieldOp of id
-  | TFieldName of id * string
-  | TVariable of id * string
-  | TFnName of id * string * sendToRail
-  | TLambdaSep of id
-  | TLambdaArrow of id
-  | TLambdaSymbol of id
-  | TLambdaVar of id * int * string
-  | TListOpen of id
-  | TListClose of id
-  | TListSep of id
-  | TThreadPipe of id * int
-  | TRecordOpen of id
-  | TRecordField of id * int * string
-  | TRecordSep of id * int
-  | TMatchKeyword of id
-  | TMatchSep of id
-  | TPatternVariable of id * id * string
-  | TPatternConstructorName of id * id * string
-  | TPatternInteger of id * id * string
-  | TPatternString of id * id * string
-  | TPatternTrue of id * id
-  | TPatternFalse of id * id
-  | TPatternNullToken of id * id
-  | TPatternFloatWhole of id * id * string
-  | TPatternFloatPoint of id * id
-  | TPatternFloatFraction of id * id * string
-  | TPatternBlank of id * id
-  | TRecordClose of id
-  | TConstructorName of id * string *)
-
 let doInsert' ~pos (letter : char) (ti : tokenInfo) (ast : ast) (s : state) :
     ast * state =
   let s = recordAction "doInsert" s in
@@ -2272,6 +2213,7 @@ let maybeOpenCmd (m : Types.model) : Types.modification =
                 Some (FluidCommandsFor (tl.id, id)) ) )
   |> Option.withDefault ~default:NoChange
 
+
 let updateKey (key : K.key) (ast : ast) (s : state) : ast * state =
   let pos = s.newPos in
   let keyChar = K.toChar key in
@@ -2404,7 +2346,8 @@ let updateKey (key : K.key) (ast : ast) (s : state) : ast * state =
         let offset = pos - ti.startPos in
         (convertPatternIntToFloat offset mID id ast, moveOneRight pos s)
     (* Binop specific *)
-    | K.Plus, L (_, toTheLeft), _ when Token.isTokenInfoString toTheLeft && onEdge ->
+    | K.Plus, L (_, toTheLeft), _
+      when Token.isTokenInfoString toTheLeft && onEdge ->
         (convertToAppend (Token.tid toTheLeft.token) ast, s |> moveTo (pos + 4))
     | K.Percent, L (_, toTheLeft), _
     | K.Minus, L (_, toTheLeft), _
