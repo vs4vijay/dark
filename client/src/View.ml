@@ -80,13 +80,16 @@ let viewTL_ (m : model) (tl : toplevel) : msg Html.html =
     match (tlidOf m.cursorState, idOf m.cursorState) with
     | Some tlid_, Some id when tlid_ = tlid ->
         let acFnDocString =
-          m.complete
-          |> Autocomplete.highlighted
-          |> Option.andThen ~f:Autocomplete.documentationForItem
-          |> Option.map ~f:(fun desc ->
-                 [ Html.div
-                     [Html.class' "documentation-box"]
-                     [Html.p [] [Html.text desc]] ] )
+          match (Autocomplete.highlighted m.complete) with
+          | Some aci ->
+            let docs = Autocomplete.documentationForItem aci in
+            if List.isEmpty docs
+            then None
+            else Some [ Html.div
+              [Html.class' "documentation-box"]
+              (docs |> List.map ~f:(fun ln -> Html.p [] [Html.text ln] ))
+              ]
+          | None -> None
         in
         let selectedFnDocString =
           let fn =

@@ -116,6 +116,8 @@ let asName (aci : autocompleteItem) : string =
   | ACTypeFieldTipe tipe ->
       RT.tipe2str tipe
 
+let paramAsString (p : parameter) : string =
+  "(" ^ p.paramName ^ ":" ^ (RT.tipe2str p.paramTipe) ^ ")"
 
 let asTypeString (item : autocompleteItem) : string =
   match item with
@@ -950,8 +952,7 @@ let appendQuery (m : model) (str : string) (a : autocomplete) : autocomplete =
   in
   setQuery m q a
 
-
-let documentationForItem (aci : autocompleteItem) : string option =
+let documentationForItem (aci : autocompleteItem) : string list =
   match aci with
   | ACFunction f ->
       let desc =
@@ -960,69 +961,71 @@ let documentationForItem (aci : autocompleteItem) : string option =
         else "Function call with no description"
       in
       let desc = if f.fnDeprecated then "DEPRECATED: " ^ desc else desc in
-      Some desc
+      let signature = 
+        f.fnParameters
+        |> List.map ~f: paramAsString
+        |> String.join ~sep:" "
+        |> fun s -> s ^ " ->  " ^ RT.tipe2str f.fnReturnTipe
+      in
+      [signature ; desc]
   | ACCommand c ->
-      Some (c.doc ^ " (" ^ c.shortcut ^ ")")
+      [c.doc ^ " (" ^ c.shortcut ^ ")"]
   | ACConstructorName "Just" ->
-      Some "An Option containing a value"
+      ["An Option containing a value"]
   | ACConstructorName "Nothing" ->
-      Some "An Option representing Nothing"
+      ["An Option representing Nothing"]
   | ACConstructorName "Ok" ->
-      Some "A successful Result containing a value"
+      ["A successful Result containing a value"]
   | ACConstructorName "Error" ->
-      Some "A Result representing a failure"
+      ["A Result representing a failure"]
   | ACConstructorName name ->
-      Some ("TODO: this should never occur: the constructor " ^ name)
+      ["TODO: this should never occur: the constructor " ^ name]
   | ACField fieldname ->
-      Some ("The '" ^ fieldname ^ "' field of the object")
+      ["The '" ^ fieldname ^ "' field of the object"]
   | ACVariable var ->
       if String.isCapitalized var
-      then Some ("The database '" ^ var ^ "'")
-      else Some ("The variable '" ^ var ^ "'")
+      then ["The database '" ^ var ^ "'"]
+      else ["The variable '" ^ var ^ "'"]
   | ACLiteral lit ->
-      Some ("The literal value '" ^ lit ^ "'")
+      ["The literal value '" ^ lit ^ "'"]
   | ACKeyword KLet ->
-      Some "A `let` expression allows you assign a variable to an expression"
+      ["A `let` expression allows you assign a variable to an expression"]
   | ACKeyword KIf ->
-      Some "An `if` expression allows you to branch on a boolean condition"
+      ["An `if` expression allows you to branch on a boolean condition"]
   | ACKeyword KLambda ->
-      Some
-        "A `lambda` creates an anonymous function. This is most often used for iterating through lists"
+      ["A `lambda` creates an anonymous function. This is most often used for iterating through lists"]
   | ACKeyword KMatch ->
-      Some
-        "A `match` expression allows you to pattern match on a value, and return different expressions based on many possible conditions"
+      ["A `match` expression allows you to pattern match on a value, and return different expressions based on many possible conditions"]
   | ACKeyword KThread ->
-      Some
-        "The `|>` (pipe) expression takes the result of this expression, and puts it as the first argument to the next expression. Think of it as method chaining (a.b().c())"
+      ["The `|>` (pipe) expression takes the result of this expression, and puts it as the first argument to the next expression. Think of it as method chaining (a.b().c())"]
   | ACOmniAction _ ->
-      None
+      []
   | ACHTTPModifier verb ->
-      Some ("Make this handler match the " ^ verb ^ " HTTP verb")
+      ["Make this handler match the " ^ verb ^ " HTTP verb"]
   | ACCronTiming timing ->
-      Some ("Request this handler to trigger " ^ timing)
+      ["Request this handler to trigger " ^ timing]
   | ACEventSpace "HTTP" ->
-      Some "This handler will respond to HTTP requests"
+      ["This handler will respond to HTTP requests"]
   | ACEventSpace "CRON" ->
-      Some "This handler will periodically trigger"
+      ["This handler will periodically trigger"]
   | ACEventSpace "WORKER" ->
-      Some "This handler will run emited events in the background"
+      ["This handler will run emited events in the background"]
   | ACEventSpace "REPL" ->
-      Some "This handler allows you run code in it"
+      ["This handler allows you run code in it"]
   | ACEventSpace _ ->
-      Some
-        "This handler is deprecated. You should create a new WORKER handler, copy the code over, and change your `emit` calls to point to the new WORKER"
+        ["This handler is deprecated. You should create a new WORKER handler, copy the code over, and change your `emit` calls to point to the new WORKER"]
   | ACEventName name ->
-      Some ("Respond to events/HTTP requests named " ^ name)
+      ["Respond to events/HTTP requests named " ^ name]
   | ACDBName name ->
-      Some ("Set the DB's name to " ^ name)
+      ["Set the DB's name to " ^ name]
   | ACDBColType tipe ->
-      Some ("This field will be a " ^ tipe)
+      ["This field will be a " ^ tipe]
   | ACParamTipe tipe ->
-      Some ("This parameter will be a " ^ RT.tipe2str tipe)
+      ["This parameter will be a " ^ RT.tipe2str tipe]
   | ACTypeFieldTipe tipe ->
-      Some ("This parameter will be a " ^ RT.tipe2str tipe)
+      ["This parameter will be a " ^ RT.tipe2str tipe]
   | ACExtra _ ->
-      None
+      []
 
 
 let setTarget (m : model) (t : target option) (a : autocomplete) : autocomplete

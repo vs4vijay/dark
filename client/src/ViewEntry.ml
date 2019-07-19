@@ -113,10 +113,7 @@ let normalEntryHtml (placeholder : string) (ac : autocomplete) : msg Html.html
           ; nothingMouseEvent "mousedown"
           ; eventNoPropagation ~key:("ac-" ^ name) "click" (fun _ ->
                 AutocompleteClick i ) ]
-          [ view item
-          ; Html.span
-              [Html.class' "types"]
-              [Html.text <| Autocomplete.asTypeString item] ] )
+          [ view item ] )
       acis
   in
   let invalidIndex = ac.index - List.length ac.completions in
