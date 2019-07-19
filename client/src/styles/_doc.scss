@@ -8,4 +8,8 @@
   color: $white1;
   width: calc(#{"100% - 20px"});
   overflow-wrap: break-word;
+
+  p:nth-child(2) {
+    color: lighten($grey2, 10%);
+  }
 }

@@ -967,7 +967,7 @@ let documentationForItem (aci : autocompleteItem) : string list =
         |> String.join ~sep:" "
         |> fun s -> s ^ " ->  " ^ RT.tipe2str f.fnReturnTipe
       in
-      [signature ; desc]
+      [desc ; signature]
   | ACCommand c ->
       [c.doc ^ " (" ^ c.shortcut ^ ")"]
   | ACConstructorName "Just" ->
