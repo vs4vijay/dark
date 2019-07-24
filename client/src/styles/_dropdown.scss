@@ -20,16 +20,15 @@ $wrapper-background: $black2;
     color: $grey2;
     float: right;
     z-index: 0;
-    
+
     &.too-long {
       float: none;
       overflow: hidden;
-      // position: relative;
-      // top: -14px;
     }
   }
 
-  .name, .namegroup {
+  .name,
+  .namegroup {
     z-index: 1;
     float: left;
   }

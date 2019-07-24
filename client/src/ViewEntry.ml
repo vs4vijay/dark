@@ -116,7 +116,9 @@ let normalEntryHtml (placeholder : string) (ac : autocomplete) : msg Html.html
                 AutocompleteClick i ) ]
           [ view item
           ; Html.span
-              [Html.classList [("types", true) ; ("too-long", String.length typeStr > 40 )]]
+              [ Html.classList
+                  [("types", true); ("too-long", String.length typeStr > 40)]
+              ]
               [Html.text typeStr] ] )
       acis
   in
