@@ -103,6 +103,7 @@ let normalEntryHtml (placeholder : string) (ac : autocomplete) : msg Html.html
           | _ ->
               Html.span [Html.class' "name"] [Html.text name]
         in
+        let typeStr = Autocomplete.asTypeString item in
         Html.li
           [ Attributes.classList
               [ ("autocomplete-item", true)
@@ -115,8 +116,8 @@ let normalEntryHtml (placeholder : string) (ac : autocomplete) : msg Html.html
                 AutocompleteClick i ) ]
           [ view item
           ; Html.span
-              [Html.class' "types"]
-              [Html.text <| Autocomplete.asTypeString item] ] )
+              [Html.classList [("types", true) ; ("too-long", String.length typeStr > 40 )]]
+              [Html.text typeStr] ] )
       acis
   in
   let invalidIndex = ac.index - List.length ac.completions in
