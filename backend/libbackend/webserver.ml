@@ -1215,9 +1215,15 @@ let login_template = File.readfile ~root:Templates "login.html"
 let handle_login_page ~execution_id req body =
   if CRequest.meth req = `GET
   then
-    (* In the future we should move this into the "outer" frontend app, but for
-     * now this is fine. *)
-    respond ~execution_id `OK login_template
+    match CRequest.uri req |> Uri.host with
+    | Some "darklang.localhost" ->
+        (*stay in ugly form for dev, because we can't be sure you have corp-site repo running  *)
+        respond ~execution_id `OK login_template
+    | _ ->
+        (* Redirect to corp site login page *)
+        S.respond_redirect
+          ~uri:(Uri.of_string "https://www.darklang.com/user-login")
+          ()
   else
     (* Responds to a form submitted from login.html *)
     let params = Uri.query_of_encoded body in
