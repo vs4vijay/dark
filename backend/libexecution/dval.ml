@@ -204,7 +204,7 @@ let rec tipe_of (dv : dval) : tipe =
       TBlock
   | DError _ ->
       TError
-  | DIncomplete ->
+  | DIncomplete | DSrcIncomplete _ ->
       TIncomplete
   | DResp _ ->
       TResp
@@ -529,7 +529,7 @@ let rec unsafe_dval_to_yojson_v0 ?(redact = true) (dv : dval) : Yojson.Safe.t =
       |> DvalMap.to_list
       |> List.map ~f:(fun (k, v) -> (k, unsafe_dval_to_yojson_v0 ~redact v))
       |> fun x -> `Assoc x
-  | DBlock _ | DIncomplete ->
+  | DBlock _ | DIncomplete | DSrcIncomplete _ ->
       wrap_user_type `Null
   | DCharacter c ->
       wrap_user_str (Unicode_string.Character.to_string c)
@@ -754,7 +754,7 @@ let rec to_enduser_readable_text_v0 dval =
         "<DB: " ^ dbname ^ ">"
     | DError msg ->
         "Error: " ^ msg
-    | DIncomplete ->
+    | DIncomplete | DSrcIncomplete _ ->
         "<Incomplete>"
     | DBlock _ ->
         "<Block>"
@@ -813,7 +813,7 @@ let rec to_developer_repr_v0 (dv : dval) : string =
         "null"
     | DBlock _ ->
         justtipe
-    | DIncomplete ->
+    | DIncomplete | DSrcIncomplete _ ->
         justtipe
     | DError msg ->
         wrap msg
@@ -880,7 +880,7 @@ let to_pretty_machine_yojson_v1 dval =
         |> DvalMap.to_list
         |> List.map ~f:(fun (k, v) -> (k, recurse v))
         |> fun x -> `Assoc x
-    | DBlock _ | DIncomplete ->
+    | DBlock _ | DIncomplete | DSrcIncomplete _ ->
         `Null
     | DCharacter c ->
         `String (Unicode_string.Character.to_string c)
@@ -978,6 +978,8 @@ let rec show dv =
       "<Error: " ^ msg ^ ">"
   | DIncomplete ->
       "<Incomplete>"
+  | DSrcIncomplete id ->
+      "<Incompletes [" ^ (string_of_id id) ^ "]>"
   | DBlock _ ->
       "<Block>"
   | DPassword _ ->
@@ -1089,7 +1091,7 @@ let to_string_pairs_exn dv : (string * string) list =
 (* For putting into URLs as query params *)
 let rec to_url_string_exn (dv : dval) : string =
   match dv with
-  | DBlock _ | DIncomplete | DPassword _ ->
+  | DBlock _ | DIncomplete | DPassword _ | DSrcIncomplete _ ->
       "<" ^ (dv |> tipename) ^ ">"
   | DInt i ->
       Dint.to_string i
@@ -1215,6 +1217,8 @@ let rec to_hashable_repr ?(indent = 0) ?(old_bytes = false) (dv : dval) :
       "'" ^ Unicode_string.Character.to_string c ^ "'"
   | DIncomplete ->
       "<incomplete: <incomplete>>" (* Can't be used anyway *)
+  | DSrcIncomplete _ ->
+      "<incomplete>"
   | DBlock _ ->
       "<block: <block>>"
   | DError msg ->
