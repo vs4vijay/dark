@@ -1073,6 +1073,13 @@ test("fluid_single_click_on_token_in_deselected_handler_focuses", async t => {
     .click(Selector(".id-2068425241.fluid-let-lhs"), { caretPos: 2 });
 });
 
+test("fluid_single_click_on_token_in_selected_handler_places_cursor", async t => {
+  await t
+    .expect(available(".id-453209170.fluid-let-lhs"))
+    .ok()
+    .click(Selector(".id-453209170.fluid-let-lhs"), { caretPos: 2 });
+});
+
 test("fluid_double_click_selects_token", async t => {
   await t
     .navigateTo("#handler=123")
