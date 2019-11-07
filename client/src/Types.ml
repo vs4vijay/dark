@@ -934,6 +934,7 @@ and modification =
   | ShowSaveToast
   | SetClipboardContents of clipboardContents * clipboardEvent
   | UpdateASTCache of tlid * string
+  | InitASTCache of handler list * userFunction list
 
 (* ------------------- *)
 (* Msgs *)
