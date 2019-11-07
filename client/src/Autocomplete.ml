@@ -1248,3 +1248,10 @@ let update (m : model) (mod_ : autocompleteMod) (a : autocomplete) :
 *)
 let isOpened (ac : autocomplete) : bool =
   Option.isSome ac.target || ac.isCommandMode
+
+
+let isOmnibox (ac : autocomplete) : bool =
+  ac.target = None
+  && ac.targetDval = None
+  && (not ac.isCommandMode)
+  && ac.visible
