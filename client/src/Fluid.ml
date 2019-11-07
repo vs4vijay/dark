@@ -4533,7 +4533,8 @@ let update (m : Types.model) (msg : Types.fluidMsg) : Types.modification =
               Many
                 [ Types.TweakModel (fun m -> TL.withAST m tlid asExpr)
                 ; Toplevel.setSelectedAST m asExpr
-                ; requestAnalysis ]
+                ; requestAnalysis
+                ; UpdateASTCache (tlid, eToString s newAST) ]
             else Types.NoChange
           in
           Types.Many
