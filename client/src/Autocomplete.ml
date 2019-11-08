@@ -226,6 +226,25 @@ let asTypeString (item : autocompleteItem) : string =
         "builtin" )
 
 
+(* TODO(alice) signal jump to vs found in using item string instead of isDynamic *)
+let asTypeClass (item : autocompleteItem) : string =
+  match item with
+  | ACOmniAction (NewDB _)
+  | ACOmniAction (NewFunction _)
+  | ACOmniAction (NewHTTPHandler _)
+  | ACOmniAction (NewWorkerHandler _)
+  | ACOmniAction (NewCronHandler _)
+  | ACOmniAction (NewReplHandler _)
+  | ACOmniAction (NewGroup _) ->
+      "new-tl"
+  | ACOmniAction (Goto (_, _, _, true)) ->
+      "found-in"
+  | ACOmniAction (Goto (_, _, _, false)) ->
+      "jump-to"
+  | _ ->
+      ""
+
+
 let asString (aci : autocompleteItem) : string = asName aci ^ asTypeString aci
 
 (* ---------------------------- *)
