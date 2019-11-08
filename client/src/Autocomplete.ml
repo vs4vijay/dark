@@ -576,16 +576,26 @@ let qHTTPHandler (s : string) : omniAction =
   else NewHTTPHandler (Some (assertValid httpNameValidator ("/" ^ name)))
 
 
-let handlerFindtoName (h : handler) : string =
-  "Found in "
-  ^ (h.spec.space |> B.toMaybe |> Option.withDefault ~default:"Undefined")
-  ^ "::"
-  ^ (h.spec.name |> B.toMaybe |> Option.withDefault ~default:"Undefined")
-  ^ " - "
-  ^ (h.spec.modifier |> B.toMaybe |> Option.withDefault ~default:"Undefined")
+let handlerDisplayName (h : handler) : string =
+  let space =
+    h.spec.space
+    |> B.toMaybe
+    |> Option.map ~f:(fun x -> x ^ "::")
+    |> Option.withDefault ~default:""
+  in
+  let name =
+    h.spec.name |> B.toMaybe |> Option.withDefault ~default:"Undefined"
+  in
+  let modi =
+    h.spec.modifier
+    |> B.toMaybe
+    |> Option.map ~f:(fun x -> if x = "_" then "" else " - " ^ x)
+    |> Option.withDefault ~default:""
+  in
+  space ^ name ^ modi
 
 
-let fnFindToName (f : userFunction) : string =
+let fnDisplayName (f : userFunction) : string =
   "Found in function: "
   ^ ( f.ufMetadata.ufmName
     |> B.toMaybe
@@ -600,23 +610,21 @@ let qSearch (m : model) (s : string) : omniAction list =
     | None ->
         false
   in
+  let handlerName h = "Found in " ^ handlerDisplayName h in
   if String.length s > 3
   then
     let handlers =
       TD.values m.handlers
       |> List.filter ~f:(fun h -> findString h.hTLID)
       |> List.map ~f:(fun h ->
-             Goto
-               ( FocusedHandler (h.hTLID, true)
-               , h.hTLID
-               , handlerFindtoName h
-               , true ) )
+             Goto (FocusedHandler (h.hTLID, true), h.hTLID, handlerName h, true)
+         )
     in
     let userFunctions =
       TD.values m.userFunctions
       |> List.filter ~f:(fun f -> findString f.ufTLID)
       |> List.map ~f:(fun f ->
-             Goto (FocusedFn f.ufTLID, f.ufTLID, fnFindToName f, true) )
+             Goto (FocusedFn f.ufTLID, f.ufTLID, fnDisplayName f, true) )
     in
     handlers @ userFunctions
   else []
@@ -709,14 +717,7 @@ let fnGotoName (name : string) : string = "Just to function: " ^ name
 let tlGotoName (tl : toplevel) : string =
   match tl with
   | TLHandler h ->
-      "Jump to handler: "
-      ^ (h.spec.space |> B.toMaybe |> Option.withDefault ~default:"Undefined")
-      ^ "::"
-      ^ (h.spec.name |> B.toMaybe |> Option.withDefault ~default:"Undefined")
-      ^ " - "
-      ^ ( h.spec.modifier
-        |> B.toMaybe
-        |> Option.withDefault ~default:"Undefined" )
+      "Jump to " ^ handlerDisplayName h
   | TLDB db ->
       "Jump to DB: "
       ^ (db.dbName |> B.toMaybe |> Option.withDefault ~default:"Unnamed DB")
