@@ -179,7 +179,8 @@ $wrapper-background: $black2;
       &.new-tl + .found-in,
       &.new-tl + .jump-to,
       &.found-in + .jump-to {
-        border-top: 1px $grey1 solid;
+        // border-top: 1px $grey1 solid;
+        margin-top: 10px;
       }
     }
   }
