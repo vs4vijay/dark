@@ -4710,9 +4710,25 @@ let toHtml ~(vs : ViewUtils.viewState) ~tlid ~state (ast : ast) :
         let classes = Token.toCssClasses ti.token in
         let idStr = deID (Token.tid ti.token) in
         let idclasses = ["id-" ^ idStr] in
+        let errorClasses =
+          (* Here we want to find out the dval so we can apply error classes to the token *)
+          let id = Token.analysisID ti.token in
+          if FluidToken.validID id
+           then
+             match (Analysis.getLiveValueLoadable vs.analysisStore id, ti.token) with
+             | (LoadableSuccess DIncomplete, TBlank _)
+             | (LoadableSuccess DIncomplete, TPlaceholder _)
+             | (LoadableSuccess DIncomplete, TPartial _)
+             | (LoadableSuccess DIncomplete, TRightPartial _)
+             | (LoadableSuccess DIncomplete, TPartialGhost _) ->
+              (* TODO later we want to match token id with DIncomplete id *)
+              ["fluid-incomplete"]
+             | _ -> []
+          else []
+        in
         Html.span
           [ Attrs.class'
-              ( ["fluid-entry"] @ classes @ idclasses @ highlight
+              ( ["fluid-entry"] @ classes @ idclasses @ highlight @ errorClasses
               |> String.join ~sep:" " )
           ; ViewUtils.eventNeither
               ~key:("fluid-selection-dbl-click" ^ idStr)
@@ -4811,7 +4827,12 @@ let viewLiveValue
              | Some (FACVariable (_, Some dval)), _
              | None, LoadableSuccess dval ->
                  let text = Runtime.toRepr dval in
-                 ([Html.text text; viewCopyButton tlid text], true, ti.startRow)
+                 let copyBtn = 
+                    match dval with
+                    | DIncomplete | DError _ -> Vdom.noNode
+                    | _ -> viewCopyButton tlid text
+                  in
+                 ([Html.text text; copyBtn], true, ti.startRow)
              | Some _, _ ->
                  none
              | None, LoadableNotInitialized | None, LoadableLoading _ ->
