@@ -388,7 +388,7 @@ let rec toRepr_ (oldIndent : int) (dv : dval) : string =
   | DIncomplete ->
       asType
   | DSrcIncomplete id ->
-    "DSrcIncomplete[" ^ (show_id id) ^ "]"
+    "DSrcIncomplete<" ^ (show_id id) ^ ">"
   | DResp (Redirect url, dv_) ->
       "302 " ^ url ^ nl ^ toRepr_ indent dv_
   | DResp (Response (code, hs), dv_) ->

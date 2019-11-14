@@ -201,9 +201,9 @@ let rec exec
   let value _ =
     match expr with
     | Blank id ->
-        DIncomplete
-    | Partial _ ->
-        DIncomplete
+        DSrcIncomplete id
+    | Partial (id, _) ->
+        DSrcIncomplete id
     | Filled (_, FluidPartial (_, expr))
     | Filled (_, FluidRightPartial (_, expr)) ->
         exe st expr
@@ -289,6 +289,8 @@ let rec exec
               elseresult
           | DIncomplete ->
               DIncomplete
+          | DSrcIncomplete id ->
+            DSrcIncomplete id
           | DError _ ->
               DError "Expected boolean, got error"
           | DErrorRail _ as er ->
