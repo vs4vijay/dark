@@ -146,7 +146,7 @@ https://github.com/chriskempson/tomorrow-theme */
 
   .fluid-incomplete, .fluid-empty.fluid-incomplete {
     background-color: transparent;
-    border-bottom: 1px dashed saturate($red, 10%);
+    border: 1px dashed saturate($red, 10%);
     &.fluid-placeholder {
       color: darken($red, 10%);
     }

@@ -4708,20 +4708,25 @@ let toHtml ~(vs : ViewUtils.viewState) ~tlid ~state (ast : ast) :
           else []
         in
         let classes = Token.toCssClasses ti.token in
-        let idStr = deID (Token.tid ti.token) in
+        let tokenId = Token.tid ti.token in
+        let idStr = deID tokenId in
         let idclasses = ["id-" ^ idStr] in
         let errorClasses =
           (* Here we want to find out the dval so we can apply error classes to the token *)
           let id = Token.analysisID ti.token in
           if FluidToken.validID id
            then
-             match (Analysis.getLiveValueLoadable vs.analysisStore id, ti.token) with
+             (* match (Analysis.getLiveValueLoadable vs.analysisStore id, ti.token) with
              | (LoadableSuccess DIncomplete, TBlank _)
              | (LoadableSuccess DIncomplete, TPlaceholder _)
              | (LoadableSuccess DIncomplete, TPartial _)
              | (LoadableSuccess DIncomplete, TRightPartial _)
              | (LoadableSuccess DIncomplete, TPartialGhost _) ->
               (* TODO later we want to match token id with DIncomplete id *)
+              ["fluid-incomplete"]
+             | _ -> [] *)
+             match Analysis.getLiveValueLoadable vs.analysisStore id with
+             | LoadableSuccess (DSrcIncomplete incId) when incId = tokenId ->
               ["fluid-incomplete"]
              | _ -> []
           else []
