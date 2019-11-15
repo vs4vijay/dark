@@ -116,12 +116,15 @@ let rec dval (dv : Types.dval) : Js.Json.t =
   | DIncomplete ->
       ev "DIncomplete" []
   | DSrcIncomplete i ->
-     ev "DSrcIncomplete" [id i]
+      ev "DSrcIncomplete" [id i]
   (* user-ish types *)
   | DCharacter c ->
       ev "DCharacter" [string c]
   | DError msg ->
       ev "DError" [string msg]
+  | DSrcError (i, msg) ->
+      Js.log3 "DSrcError ENCODE" i msg ;
+      ev "DSrcError" [tuple2 id string (i, msg)]
   | DResp (h, hdv) ->
       ev "DResp" [tuple2 dhttp dval (h, hdv)]
   | DDB name ->

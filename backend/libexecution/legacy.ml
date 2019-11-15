@@ -34,7 +34,7 @@ module PrettyResponseJsonV0 = struct
         wrap_user_type `Null
     | DCharacter c ->
         wrap_user_str (Unicode_string.Character.to_string c)
-    | DError msg ->
+    | DError msg | DSrcError (_, msg) ->
         wrap_user_str msg
     | DResp (h, hdv) ->
         wrap_user_type

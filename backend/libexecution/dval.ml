@@ -202,7 +202,7 @@ let rec tipe_of (dv : dval) : tipe =
       TObj
   | DBlock _ ->
       TBlock
-  | DError _ ->
+  | DError _ | DSrcError _ ->
       TError
   | DIncomplete | DSrcIncomplete _ ->
       TIncomplete
@@ -262,7 +262,11 @@ let exception_to_dval exc = DError (Exception.to_string exc)
  * code. They should be propagated through the programs execution whenever they are
  * found.*)
 let is_fake_marker_dval (dv : dval) =
-  match dv with DErrorRail _ | DIncomplete | DError _ -> true | _ -> false
+  match dv with
+  | DErrorRail _ | DIncomplete | DSrcIncomplete _ | DError _ ->
+      true
+  | _ ->
+      false
 
 
 (* Anytime we create a dlist with the except of list literals,
@@ -533,7 +537,7 @@ let rec unsafe_dval_to_yojson_v0 ?(redact = true) (dv : dval) : Yojson.Safe.t =
       wrap_user_type `Null
   | DCharacter c ->
       wrap_user_str (Unicode_string.Character.to_string c)
-  | DError msg ->
+  | DError msg | DSrcError (_, msg) ->
       wrap_user_str msg
   | DResp (h, hdv) ->
       wrap_user_type
@@ -752,7 +756,7 @@ let rec to_enduser_readable_text_v0 dval =
         Uuidm.to_string uuid
     | DDB dbname ->
         "<DB: " ^ dbname ^ ">"
-    | DError msg ->
+    | DError msg | DSrcError (_, msg) ->
         "Error: " ^ msg
     | DIncomplete | DSrcIncomplete _ ->
         "<Incomplete>"
@@ -815,7 +819,7 @@ let rec to_developer_repr_v0 (dv : dval) : string =
         justtipe
     | DIncomplete | DSrcIncomplete _ ->
         justtipe
-    | DError msg ->
+    | DError msg | DSrcError (_, msg) ->
         wrap msg
     | DDate d ->
         wrap (Util.isostring_of_date d)
@@ -884,7 +888,7 @@ let to_pretty_machine_yojson_v1 dval =
         `Null
     | DCharacter c ->
         `String (Unicode_string.Character.to_string c)
-    | DError msg ->
+    | DError msg | DSrcError (_, msg) ->
         `Assoc [("Error", `String msg)]
     | DResp (h, hdv) ->
         recurse hdv
@@ -976,10 +980,12 @@ let rec show dv =
       "<DB: " ^ dbname ^ ">"
   | DError msg ->
       "<Error: " ^ msg ^ ">"
+  | DSrcError (id, msg) ->
+      Printf.sprintf "<Error[%s]: %s>" (string_of_id id) msg
   | DIncomplete ->
       "<Incomplete>"
   | DSrcIncomplete id ->
-      "<Incompletes [" ^ (string_of_id id) ^ "]>"
+      "<Incomplete[" ^ string_of_id id ^ "]>"
   | DBlock _ ->
       "<Block>"
   | DPassword _ ->
@@ -1113,7 +1119,7 @@ let rec to_url_string_exn (dv : dval) : string =
       dbname
   | DErrorRail d ->
       to_url_string_exn d
-  | DError msg ->
+  | DError msg | DSrcError (_, msg) ->
       "error=" ^ msg
   | DUuid uuid ->
       Uuidm.to_string uuid
@@ -1217,11 +1223,11 @@ let rec to_hashable_repr ?(indent = 0) ?(old_bytes = false) (dv : dval) :
       "'" ^ Unicode_string.Character.to_string c ^ "'"
   | DIncomplete ->
       "<incomplete: <incomplete>>" (* Can't be used anyway *)
-  | DSrcIncomplete _ ->
-      "<incomplete>"
+  | DSrcIncomplete id ->
+      "<incomplete:" ^ string_of_id id ^ ">"
   | DBlock _ ->
       "<block: <block>>"
-  | DError msg ->
+  | DError msg | DSrcError (_, msg) ->
       "<error: " ^ msg ^ ">"
   | DDate d ->
       "<date: " ^ Util.isostring_of_date d ^ ">"

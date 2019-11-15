@@ -190,7 +190,7 @@ let typeOf (dv : dval) : tipe =
       TBlock
   | DIncomplete | DSrcIncomplete _ ->
       TIncomplete
-  | DError _ ->
+  | DError _ | DSrcError _ ->
       TError
   | DResp (_, _) ->
       TResp
@@ -334,7 +334,7 @@ let rec toRepr_ (oldIndent : int) (dv : dval) : string =
       wrap s
   | DUuid s ->
       wrap s
-  | DError s ->
+  | DSrcError (_, s) | DError s ->
       let open Json_decode_extended in
       let decoder j : exception_ =
         { short = field "short" string j
@@ -388,7 +388,7 @@ let rec toRepr_ (oldIndent : int) (dv : dval) : string =
   | DIncomplete ->
       asType
   | DSrcIncomplete id ->
-    "DSrcIncomplete<" ^ (show_id id) ^ ">"
+      "DSrcIncomplete<" ^ show_id id ^ ">"
   | DResp (Redirect url, dv_) ->
       "302 " ^ url ^ nl ^ toRepr_ indent dv_
   | DResp (Response (code, hs), dv_) ->

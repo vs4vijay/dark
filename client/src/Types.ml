@@ -402,6 +402,7 @@ and dval =
   | DIncomplete
   | DSrcIncomplete of id
   | DError of string
+  | DSrcError of id * string
   | DBlock
   | DErrorRail of dval
   | DResp of dhttp * dval

@@ -423,7 +423,7 @@ let rec exec
           List.fold_left es ~init:fst ~f:(fun previous nxt ->
               let result = inject_param_and_execute st previous nxt in
               match result with
-              | DIncomplete ->
+              | DIncomplete | DSrcIncomplete _ ->
                   previous
               (* let execution through *)
               (* DErrorRail is handled by inject_param_and_execute *)
@@ -491,11 +491,11 @@ let rec exec
           | DErrorRail _ ->
               obj
           | x ->
-              DError
-                ( "Attempting to access of a field of something that isn't an
+              DSrcError
+                ( id
+                , "Attempting to access a field of something that isn't an
 object but is a "
-                ^ (x |> Dval.tipe_of |> Dval.tipe_to_string)
-                ^ "" )
+                  ^ (x |> Dval.tipe_of |> Dval.tipe_to_string) )
         in
         trace_blank field result st ;
         result
