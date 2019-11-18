@@ -413,7 +413,7 @@ module RuntimeT = struct
     | DIncomplete
     | DSrcIncomplete of id
     | DError of string
-    | DSrcError of id * string
+    | DSrcError of (id * string)
     | DBlock of dval block
     | DErrorRail of dval
     (* user types: awaiting a better type system *)
