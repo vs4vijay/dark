@@ -451,6 +451,7 @@ let rec updateMod (mod_ : modification) ((m, cmd) : model * msg Cmd.t) :
         let newM = {m with cursorState} in
         (newM, Entry.focusEntry newM)
     | SetPage page ->
+        Debug.loG "========" ();
         let pagePresent =
           match Page.tlidOf page with
           | None ->
@@ -1909,8 +1910,10 @@ let update_ (msg : msg) (m : model) : modification =
   | SetHandlerActionsMenu (tlid, show) ->
       TweakModel (Editor.setHandlerMenu tlid show)
   | FluidMsg (FluidStartSelection targetExnID) ->
+      Debug.loG "FluidStartSelection" targetExnID;
       Many [Select (targetExnID, None); StartFluidMouseSelecting targetExnID]
   | FluidMsg (FluidUpdateSelection (targetExnID, selection)) ->
+      Debug.loG "FluidUpdateSelection" targetExnID;
       Many
         [ Select (targetExnID, None)
         ; TweakModel

@@ -4908,6 +4908,7 @@ let toHtml ~(vs : ViewUtils.viewState) ~tlid ~state (ast : ast) :
         let classes = Token.toCssClasses ti.token in
         let tokenId = Token.tid ti.token in
         let idStr = deID tokenId in
+        let tlidStr = deTLID tlid in
         let idclasses = ["id-" ^ idStr] in
         let isCursorOn =
           match currentTokenInfo with
@@ -4963,13 +4964,14 @@ let toHtml ~(vs : ViewUtils.viewState) ~tlid ~state (ast : ast) :
                     (* We expect that this doesn't happen *)
                     FluidMsg (FluidUpdateSelection (tlid, None)) )
           ; ViewUtils.eventNoPropagation
-              ~key:("fluid-selection-mousedown" ^ idStr)
+              ~key:("fluid-selection-mousedown" ^ tlidStr ^ idStr)
               "mousedown"
-              (fun _ -> FluidMsg (FluidStartSelection tlid) )
+              (fun _ -> Debug.loG ("mousedown > FluidStartSelection > " ^ idStr) (Token.toTypeName ti.token) ; FluidMsg (FluidStartSelection tlid) )
           ; ViewUtils.eventNoPropagation
-              ~key:("fluid-selection-mouseup" ^ idStr)
+              ~key:("fluid-selection-mouseup" ^ tlidStr ^ idStr)
               "mouseup"
               (fun _ ->
+               Debug.loG ("mouseup > FluidUpdateSelection > " ^ idStr) (Token.toTypeName ti.token);
                 match Entry.getFluidSelectionRange () with
                 | Some range ->
                     FluidMsg (FluidUpdateSelection (tlid, Some range))
@@ -4980,7 +4982,7 @@ let toHtml ~(vs : ViewUtils.viewState) ~tlid ~state (ast : ast) :
           ; ViewUtils.eventNoPropagation
               ~key:
                 ( "fluid-selection-click-"
-                ^ idStr
+                ^ tlidStr ^ idStr
                 ^ "-"
                 ^
                 match state.selectionStart with
@@ -4990,6 +4992,7 @@ let toHtml ~(vs : ViewUtils.viewState) ~tlid ~state (ast : ast) :
                     "nosel" )
               "click"
               (fun ev ->
+                Debug.loG ("click > FluidUpdateSelection > " ^ idStr) (Token.toTypeName ti.token);
                 match Entry.getFluidSelectionRange () with
                 | Some range ->
                     if ev.shiftKey
@@ -4998,7 +5001,8 @@ let toHtml ~(vs : ViewUtils.viewState) ~tlid ~state (ast : ast) :
                 | None ->
                     (* This will happen if it gets a selection and there is no
                      focused node (weird browser problem?) *)
-                    IgnoreMsg ) ]
+                    IgnoreMsg )
+          ]
           ([Html.text content] @ nested)
       in
       if vs.permission = Some ReadWrite
