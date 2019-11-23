@@ -5043,17 +5043,28 @@ let viewLiveValue
                ->
                  let text = Option.withDefault ~default:"" fnText in
                  ([Html.text text], true, ti.startRow)
+             | None, LoadableSuccess (DIncomplete src) ->
+                 let text =
+                   match src with
+                   | SourceId srcId when srcId <> id ->
+                       "<Incomplete: CMD+I to go to it's source>"
+                   | _ ->
+                       "<Incomplete>"
+                 in
+                 ([Html.text text], true, ti.startRow)
+             | None, LoadableSuccess (DError (src, msg)) ->
+                 let text =
+                   match src with
+                   | SourceId srcId when srcId <> id ->
+                       "<Error: CMD+I to go to it's source>"
+                   | _ ->
+                       "<Error: " ^ msg ^ ">"
+                 in
+                 ([Html.text text], true, ti.startRow)
              | Some (FACVariable (_, Some dval)), _
              | None, LoadableSuccess dval ->
                  let text = Runtime.toRepr dval in
-                 let copyBtn =
-                   match dval with
-                   | DIncomplete _ | DError _ ->
-                       Vdom.noNode
-                   | _ ->
-                       viewCopyButton tlid text
-                 in
-                 ([Html.text text; copyBtn], true, ti.startRow)
+                 ([Html.text text; viewCopyButton tlid text], true, ti.startRow)
              | Some _, _ ->
                  none
              | None, LoadableNotInitialized | None, LoadableLoading _ ->
