@@ -1461,13 +1461,16 @@ let moveToEndOfTarget (target : id) (ast : ast) (s : state) : state =
         FluidToken.tid ti.token = target )
   with
   | None ->
+      Debug.loG "moveToEndOfTarget" "cant find token";
       recover "cannot find token to moveToEndOfTarget" s
   | Some lastToken ->
+      Debug.loG "moveToEndOfTarget" (tokensToString [lastToken]);
       let newPos =
         if FluidToken.isBlank lastToken.token
         then lastToken.startPos
         else lastToken.endPos
       in
+      Debug.loG "moveToEndOfTarget" newPos;
       moveTo newPos s
 
 
@@ -4665,6 +4668,22 @@ let update (m : Types.model) (msg : Types.fluidMsg) : Types.modification =
       KeyPress.openOmnibox m
   | FluidKeyPress ke when FluidCommands.isOpened m.fluidState.cp ->
       FluidCommands.updateCmds m ke
+  | FluidKeyPress {key; metaKey; ctrlKey}
+    when (metaKey || ctrlKey) && key = K.Letter 'i' ->
+    Debug.loG "Inspect error" ();
+    NoChange;
+  | FluidFocusOn id ->
+    tlidOf m.cursorState
+    |> Option.andThen ~f:(fun tlid -> Debug.loG "FluidFocusOn" "got tlid"; TL.get m tlid)
+    |> Option.andThen ~f:(fun tl -> Debug.loG "FluidFocusOn" "got toplevel"; TL.getAST tl)
+    |> Option.map ~f:(fun expr ->
+      Debug.loG "FluidFocusOn" "got expr";
+      let ast = fromExpr s expr in
+      let fluidState = moveToEndOfTarget id ast s in
+      Debug.loG "FluidFocusOn modify states" (s, fluidState);
+      Types.TweakModel (fun m -> {m with fluidState})
+    )
+    |> Option.withDefault ~default: NoChange
   | FluidStartSelection _
   | FluidKeyPress _
   | FluidCopy
@@ -5044,23 +5063,37 @@ let viewLiveValue
                  let text = Option.withDefault ~default:"" fnText in
                  ([Html.text text], true, ti.startRow)
              | None, LoadableSuccess (DIncomplete src) ->
-                 let text =
+                 let text, targetId =
                    match src with
                    | SourceId srcId when srcId <> id ->
-                       "<Incomplete: CMD+I to go to it's source>"
+                       ("<Incomplete: CMD+I to go to it's source>", Some srcId)
                    | _ ->
-                       "<Incomplete>"
+                       ("<Incomplete>", None)
                  in
-                 ([Html.text text], true, ti.startRow)
+                 let dom =
+                  targetId |> Option.map ~f:(fun tid ->
+                  Html.div [ViewUtils.eventNoPropagation ~key:("lv-src-" ^ (deID tid)) "click" (fun _ ->
+                  FluidMsg (FluidFocusOn tid) )] [Html.text text]
+                  )
+                  |> Option.withDefault ~default:(Html.text text)
+                 in
+                 ([dom], true, ti.startRow)
              | None, LoadableSuccess (DError (src, msg)) ->
-                 let text =
+                 let text, targetId =
                    match src with
                    | SourceId srcId when srcId <> id ->
-                       "<Error: CMD+I to go to it's source>"
+                       ("<Error: CMD+I to go to it's source>", Some srcId)
                    | _ ->
-                       "<Error: " ^ msg ^ ">"
+                       ("<Error: " ^ msg ^ ">", None)
                  in
-                 ([Html.text text], true, ti.startRow)
+                 let dom =
+                  targetId |> Option.map ~f:(fun tid ->
+                  Html.div [ViewUtils.eventNoPropagation ~key:("lv-src-" ^ (deID tid)) "click" (fun _ ->
+                  FluidMsg (FluidFocusOn tid) )] [Html.text text]
+                  )
+                  |> Option.withDefault ~default:(Html.text text)
+                 in
+                 ([dom], true, ti.startRow)
              | Some (FACVariable (_, Some dval)), _
              | None, LoadableSuccess dval ->
                  let text = Runtime.toRepr dval in
@@ -5079,7 +5112,8 @@ let viewLiveValue
     [ Html.classList [("live-values", true); ("show", show)]
     ; Html.styles [("top", Js.Float.toString offset ^ "rem")]
     ; Attrs.autofocus false
-    ; Vdom.attribute "" "spellcheck" "false" ]
+    ; Vdom.attribute "" "spellcheck" "false"
+    ]
     liveValue
 
 

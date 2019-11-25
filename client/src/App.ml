@@ -1010,6 +1010,9 @@ let rec updateMod (mod_ : modification) ((m, cmd) : model * msg Cmd.t) :
                  cache |> TLIDDict.insert ~tlid:f.ufTLID ~value )
         in
         ({m with searchCache}, Cmd.none)
+    | FluidFocus (tlid, id) ->
+        Debug.loG "FluidFocus" (deTLID tlid, deID id);
+        (m, Cmd.none)
     (* applied from left to right *)
     | Many mods ->
         List.foldl ~f:updateMod ~init:(m, Cmd.none) mods
@@ -1893,6 +1896,9 @@ let update_ (msg : msg) (m : model) : modification =
           {m with fluidState = {m.fluidState with cp}} )
   | FluidMsg (FluidCommandsClick cmd) ->
       Many [FluidCommands.runCommand m cmd; FluidCommandsClose]
+  | FluidMsg (FluidFocusOn id) ->
+      Debug.loG "FluidFocusOn" id;
+      Fluid.update m (FluidFocusOn id)
   | TakeOffErrorRail (tlid, id) ->
     ( match TL.getTLAndPD m tlid id with
     | Some (tl, Some pd) ->

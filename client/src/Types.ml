@@ -967,6 +967,7 @@ and modification =
   | StartFluidMouseSelecting of tlid
   | UpdateASTCache of tlid * string
   | InitASTCache of handler list * userFunction list
+  | FluidFocus of tlid * id
 
 (* ------------------- *)
 (* Msgs *)
@@ -987,6 +988,7 @@ and fluidMsg =
   | FluidUpdateSelection of tlid * (int * int) option
   | FluidCommandsFilter of string
   | FluidCommandsClick of command
+  | FluidFocusOn of id
 
 and msg =
   | GlobalClick of mouseEvent
