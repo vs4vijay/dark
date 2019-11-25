@@ -71,3 +71,25 @@ let centerCanvasOn (tl : toplevel) : pos =
   let availWidth = (windowWidth - tlWidth) / 3 in
   let offsetLeft = sidebarWidth + availWidth in
   {x = (TL.pos tl).x - offsetLeft; y = (TL.pos tl).y - 200}
+  
+let isInView (id : id) (m: model) : bool =
+  let tokenSelector = ".id-" ^ (Prelude.deID id) in
+  match Native.Ext.querySelector tokenSelector with 
+  | Some tokenDom ->
+    let viewport : Native.rect =
+      let sidebarWidth = 360 in
+      let vx = -1 * m.canvasProps.offset.x + sidebarWidth in
+      let vy = -1 * m.canvasProps.offset.y in
+    { id = "#canvas"
+    ; top = vy
+    ; left = vx
+    ; right = vx + (Native.Window.viewportWidth - sidebarWidth)
+    ; bottom = vy + Native.Window.viewportHeight }
+    in
+    Debug.loG "isInView offset" viewport;
+    let rect = Native.Ext.getBoundingClient tokenDom tokenSelector in
+    Debug.loG "isInView token bounding box" rect;
+    true
+  | None ->
+    Debug.loG "isInView" "can't find token by id";
+    false

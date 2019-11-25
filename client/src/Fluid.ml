@@ -4673,6 +4673,7 @@ let update (m : Types.model) (msg : Types.fluidMsg) : Types.modification =
     Debug.loG "Inspect error" ();
     NoChange;
   | FluidFocusOn id ->
+    Debug.loG "isInView" (Viewport.isInView id m);
     tlidOf m.cursorState
     |> Option.andThen ~f:(fun tlid -> Debug.loG "FluidFocusOn" "got tlid"; TL.get m tlid)
     |> Option.andThen ~f:(fun tl -> Debug.loG "FluidFocusOn" "got toplevel"; TL.getAST tl)
