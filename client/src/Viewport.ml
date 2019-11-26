@@ -1,5 +1,6 @@
 open Types
 module TL = Toplevel
+open Tc
 
 let addPos (a : pos) (b : pos) : pos = {x = a.x + b.x; y = a.y + b.y}
 
@@ -72,24 +73,45 @@ let centerCanvasOn (tl : toplevel) : pos =
   let offsetLeft = sidebarWidth + availWidth in
   {x = (TL.pos tl).x - offsetLeft; y = (TL.pos tl).y - 200}
   
-let isInView (id : id) (m: model) : bool =
+let moveToToken (id : id) (tl : toplevel) : (int option * int option) =
   let tokenSelector = ".id-" ^ (Prelude.deID id) in
+  let tlSelector = (".tl-" ^ Prelude.deTLID (TL.id tl)) in
   match Native.Ext.querySelector tokenSelector with 
   | Some tokenDom ->
-    let viewport : Native.rect =
-      let sidebarWidth = 360 in
-      let vx = -1 * m.canvasProps.offset.x + sidebarWidth in
-      let vy = -1 * m.canvasProps.offset.y in
-    { id = "#canvas"
-    ; top = vy
-    ; left = vx
-    ; right = vx + (Native.Window.viewportWidth - sidebarWidth)
-    ; bottom = vy + Native.Window.viewportHeight }
+    let sidebarWidth =
+      Native.Ext.querySelector "#sidebar-left"
+      |> Option.map ~f:(fun e -> Native.Ext.clientWidth e)
+      |> Option.withDefault ~default:320
     in
-    Debug.loG "isInView offset" viewport;
-    let rect = Native.Ext.getBoundingClient tokenDom tokenSelector in
-    Debug.loG "isInView token bounding box" rect;
-    true
+    let viewport : Native.rect =
+      { id = "#canvas"
+      ; top = 0
+      ; left = sidebarWidth
+      ; right = Native.Window.viewportWidth
+      ; bottom = Native.Window.viewportHeight }
+    in
+    let tokenBox = Native.Ext.getBoundingClient tokenDom tokenSelector in
+    let tlBox =
+      Native.Ext.querySelector tlSelector
+      |> Option.map ~f:(fun dom -> Native.Ext.getBoundingClient dom tlSelector)
+      |> Option.valueExn
+    in
+    let tlPos = TL.pos tl in
+    let dx = 
+      if tokenBox.right > viewport.left && tokenBox.left < viewport.right
+      then None
+      else
+        let offsetLeft = tokenBox.left - tlBox.left in
+        Some (tlPos.x - (sidebarWidth + offsetLeft))
+    in
+    let dy =
+      if tokenBox.bottom > viewport.top && tokenBox.top < viewport.bottom
+      then None
+      else
+        let offsetTop = tokenBox.top - tlBox.top in
+        Some (tlPos.y - (50 + offsetTop))
+    in
+    (dx, dy)
   | None ->
     Debug.loG "isInView" "can't find token by id";
-    false
+    (None, None)

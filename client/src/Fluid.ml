@@ -4673,16 +4673,32 @@ let update (m : Types.model) (msg : Types.fluidMsg) : Types.modification =
     Debug.loG "Inspect error" ();
     NoChange;
   | FluidFocusOn id ->
-    Debug.loG "isInView" (Viewport.isInView id m);
     tlidOf m.cursorState
     |> Option.andThen ~f:(fun tlid -> Debug.loG "FluidFocusOn" "got tlid"; TL.get m tlid)
-    |> Option.andThen ~f:(fun tl -> Debug.loG "FluidFocusOn" "got toplevel"; TL.getAST tl)
-    |> Option.map ~f:(fun expr ->
-      Debug.loG "FluidFocusOn" "got expr";
-      let ast = fromExpr s expr in
-      let fluidState = moveToEndOfTarget id ast s in
-      Debug.loG "FluidFocusOn modify states" (s, fluidState);
-      Types.TweakModel (fun m -> {m with fluidState})
+    |> Option.map ~f:(fun tl -> Debug.loG "FluidFocusOn" "got toplevel";
+      match TL.getAST tl with
+      | Some expr ->
+        Debug.loG "FluidFocusOn" "got expr";
+        let ast = fromExpr s expr in
+        let fluidState = moveToEndOfTarget id ast s in
+        Debug.loG "FluidFocusOn modify states" (s, fluidState);
+        let moveCanvas = Viewport.moveToToken id tl in
+        Debug.loG "FluidFocusOn centerOnToken" moveCanvas;
+        Types.TweakModel (fun m ->
+          let offset, panAnimation =
+            match moveCanvas with
+            | Some dx, Some dy ->
+              ({x = dx; y = dy}, true)
+            | Some dx, None ->
+              ({x = dx; y = m.canvasProps.offset.y}, true)
+            | None, Some dy ->
+              ({x = m.canvasProps.offset.x; y = dy}, true)
+            | None, None ->
+              (m.canvasProps.offset, false)
+          in
+        {m with fluidState; canvasProps =
+        { m.canvasProps with offset; panAnimation }})
+      | None -> NoChange
     )
     |> Option.withDefault ~default: NoChange
   | FluidStartSelection _
