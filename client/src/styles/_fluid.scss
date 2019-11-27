@@ -37,6 +37,11 @@
       opacity: 0.85;
     }
   }
+
+  .jump-src:hover {
+    color: $blue;
+    cursor: pointer;
+  }
 }
 
 #fluid-status {
@@ -366,19 +371,19 @@ $error-color: saturate($red, 10%);
     animation: blinkError 0.3s ease-in-out infinite;
 
     &:hover:after {
-        @extend .tooltip;
-        background-color: rgba(30, 30, 30, 0.8);
-        padding: 2px;
-        width: max-content;
-        position: absolute;
-        top: -20px;
-        left: -5px;
+      @extend .tooltip;
+      background-color: rgba(30, 30, 30, 0.8);
+      padding: 2px;
+      width: max-content;
+      position: absolute;
+      top: -20px;
+      left: -5px;
     }
   }
 
   &.is-origin.jumped-to {
     //animation: blinkError 0.5s ease-in-out 1s 2;
-    
+
     &:after {
       @extend .tooltip;
       background-color: rgba(30, 30, 30, 0.8);
@@ -390,9 +395,7 @@ $error-color: saturate($red, 10%);
       opacity: 1;
       animation: 1s fadeOut 0.5s;
     }
-    
   }
-  
 
   &.dark-incomplete.is-origin:not(.cursor-on):hover:after,
   &.dark-incomplete.is-origin.jumped-to:after {

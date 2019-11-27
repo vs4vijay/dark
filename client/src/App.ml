@@ -927,8 +927,12 @@ let rec updateMod (mod_ : modification) ((m, cmd) : model * msg Cmd.t) :
           List.filter ~f:isComplete m.executingFunctions
         in
         ({m with executingFunctions = nexecutingFunctions}, Cmd.none)
-    | MoveCanvasTo pos ->
-        let newCanvasProps = {m.canvasProps with offset = pos} in
+    | MoveCanvasTo (pos, panAnimation) ->
+        let newCanvasProps =
+          { m.canvasProps with
+            offset = pos; panAnimation; lastOffset = Some m.canvasProps.offset
+          }
+        in
         ({m with canvasProps = newCanvasProps}, Cmd.none)
     | CenterCanvasOn tlid ->
       ( match TL.get m tlid with
@@ -1010,9 +1014,8 @@ let rec updateMod (mod_ : modification) ((m, cmd) : model * msg Cmd.t) :
                  cache |> TLIDDict.insert ~tlid:f.ufTLID ~value )
         in
         ({m with searchCache}, Cmd.none)
-    | FluidFocus (tlid, id) ->
-        Debug.loG "FluidFocus" (deTLID tlid, deID id);
-        (m, Cmd.none)
+    | FluidSetState fluidState ->
+        ({m with fluidState}, Cmd.none)
     (* applied from left to right *)
     | Many mods ->
         List.foldl ~f:updateMod ~init:(m, Cmd.none) mods
@@ -1944,7 +1947,7 @@ let update_ (msg : msg) (m : model) : modification =
                     fluidState = {m.fluidState with selectionStart = None} } )
         ]
   | FluidMsg msg ->
-    Fluid.update m msg
+      Fluid.update m msg
   | ResetToast ->
       TweakModel (fun m -> {m with toast = Defaults.defaultToast})
   | UpdateMinimap data ->

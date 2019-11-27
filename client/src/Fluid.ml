@@ -1461,16 +1461,13 @@ let moveToEndOfTarget (target : id) (ast : ast) (s : state) : state =
         FluidToken.tid ti.token = target )
   with
   | None ->
-      Debug.loG "moveToEndOfTarget" "cant find token";
       recover "cannot find token to moveToEndOfTarget" s
   | Some lastToken ->
-      Debug.loG "moveToEndOfTarget" (tokensToString [lastToken]);
       let newPos =
         if FluidToken.isBlank lastToken.token
         then lastToken.startPos
         else lastToken.endPos
       in
-      Debug.loG "moveToEndOfTarget" newPos;
       moveTo newPos s
 
 
@@ -4670,43 +4667,41 @@ let update (m : Types.model) (msg : Types.fluidMsg) : Types.modification =
       FluidCommands.updateCmds m ke
   | FluidKeyPress {key; metaKey; ctrlKey}
     when (metaKey || ctrlKey) && key = K.Letter 'i' ->
-    Debug.loG "Inspect error" ();
-    NoChange;
+      Debug.loG "Inspect error" () ;
+      NoChange
   | FluidClearDvSrc ->
-    let fluidState = {m.fluidState with dvSrc = SourceNone} in
-    Types.TweakModel (fun m -> {m with fluidState})
+      FluidSetState {m.fluidState with dvSrc = SourceNone}
   | FluidFocusOn id ->
-    tlidOf m.cursorState
-    |> Option.andThen ~f:(fun tlid -> Debug.loG "FluidFocusOn" "got tlid"; TL.get m tlid)
-    |> Option.map ~f:(fun tl -> Debug.loG "FluidFocusOn" "got toplevel";
-      match TL.getAST tl with
-      | Some expr ->
-        Debug.loG "FluidFocusOn" "got expr";
-        let ast = fromExpr s expr in
-        let fluidState =
-          let fs = moveToEndOfTarget id ast s in
-          {fs with dvSrc = SourceId id}
-        in
-        Debug.loG "FluidFocusOn modify states" (s, fluidState);
-        let moveCanvas = Viewport.moveToToken id tl in
-        Debug.loG "FluidFocusOn centerOnToken" moveCanvas;
-        Types.TweakModel (fun m ->
-          let offset, panAnimation =
-            match moveCanvas with
-            | Some dx, Some dy ->
-              ({x = dx; y = dy}, true)
-            | Some dx, None ->
-              ({x = dx; y = m.canvasProps.offset.y}, true)
-            | None, Some dy ->
-              ({x = m.canvasProps.offset.x; y = dy}, true)
-            | None, None ->
-              (m.canvasProps.offset, false)
-          in
-        {m with fluidState; canvasProps =
-        { m.canvasProps with offset; panAnimation }})
-      | None -> NoChange
-    )
-    |> Option.withDefault ~default: NoChange
+      tlidOf m.cursorState
+      |> Option.andThen ~f:(fun tlid -> TL.get m tlid)
+      |> Option.andThen ~f:(fun tl ->
+             (* We do this wrap, so we want to have one single stream of success Option chains, and one single place at the very end to define the fallback value if any of these options fail. *)
+             match TL.getAST tl with
+             | Some expr ->
+                 Some (tl, expr)
+             | None ->
+                 None )
+      |> Option.map ~f:(fun (tl, expr) ->
+             let ast = fromExpr s expr in
+             let fluidState =
+               let fs = moveToEndOfTarget id ast s in
+               {fs with dvSrc = SourceId id}
+             in
+             let moveMod =
+               match Viewport.moveToToken id tl with
+               | Some dx, Some dy ->
+                   MoveCanvasTo ({x = dx; y = dy}, true)
+               | Some dx, None ->
+                   MoveCanvasTo ({x = dx; y = m.canvasProps.offset.y}, true)
+               | None, Some dy ->
+                   MoveCanvasTo ({x = m.canvasProps.offset.x; y = dy}, true)
+               | None, None ->
+                   NoChange
+             in
+             if moveMod = NoChange
+             then FluidSetState fluidState
+             else Many [moveMod; FluidSetState fluidState] )
+      |> Option.withDefault ~default:NoChange
   | FluidStartSelection _
   | FluidKeyPress _
   | FluidCopy
@@ -4981,8 +4976,12 @@ let toHtml ~(vs : ViewUtils.viewState) ~tlid ~state (ast : ast) :
           ; (* This expression is the source of an incomplete propogated into another   expression, where the cursor is currently on *)
             ( "is-origin"
             , sourceOfCurrentToken |> Option.isSomeEqualTo ~value:analysisId )
-          ; ("jumped-to", match state.dvSrc with SourceNone -> false | SourceId id -> id = tokenId)
-          ]
+          ; ( "jumped-to"
+            , match state.dvSrc with
+              | SourceNone ->
+                  false
+              | SourceId id ->
+                  id = tokenId ) ]
         in
         Html.span
           [ Html.classList (cls @ conditionalClasses)
@@ -5027,7 +5026,9 @@ let toHtml ~(vs : ViewUtils.viewState) ~tlid ~state (ast : ast) :
                     IgnoreMsg )
           ; ViewUtils.onAnimationEnd
               ~key:("anim-end" ^ idStr)
-              ~listener: (fun msg -> if msg = "fadeOut" then FluidMsg FluidClearDvSrc else IgnoreMsg )
+              ~listener:(fun msg ->
+                if msg = "fadeOut" then FluidMsg FluidClearDvSrc else IgnoreMsg
+            )
           ; ViewUtils.eventNoPropagation
               ~key:
                 ( "fluid-selection-click-"
@@ -5093,32 +5094,42 @@ let viewLiveValue
                  let text, targetId =
                    match src with
                    | SourceId srcId when srcId <> id ->
-                       ("<Incomplete: CMD+I to go to it's source>", Some srcId)
+                       ("<Incomplete: Click to locate source>", Some srcId)
                    | _ ->
                        ("<Incomplete>", None)
                  in
                  let dom =
-                  targetId |> Option.map ~f:(fun tid ->
-                  Html.div [ViewUtils.eventNoPropagation ~key:("lv-src-" ^ (deID tid)) "click" (fun _ ->
-                  FluidMsg (FluidFocusOn tid) )] [Html.text text]
-                  )
-                  |> Option.withDefault ~default:(Html.text text)
+                   targetId
+                   |> Option.map ~f:(fun tid ->
+                          Html.div
+                            [ ViewUtils.eventNoPropagation
+                                ~key:("lv-src-" ^ deID tid)
+                                "click"
+                                (fun _ -> FluidMsg (FluidFocusOn tid))
+                            ; Html.class' "jump-src" ]
+                            [Html.text text] )
+                   |> Option.withDefault ~default:(Html.text text)
                  in
                  ([dom], true, ti.startRow)
              | None, LoadableSuccess (DError (src, msg)) ->
                  let text, targetId =
                    match src with
                    | SourceId srcId when srcId <> id ->
-                       ("<Error: CMD+I to go to it's source>", Some srcId)
+                       ("<Error: Click to locate source>", Some srcId)
                    | _ ->
                        ("<Error: " ^ msg ^ ">", None)
                  in
                  let dom =
-                  targetId |> Option.map ~f:(fun tid ->
-                  Html.div [ViewUtils.eventNoPropagation ~key:("lv-src-" ^ (deID tid)) "click" (fun _ ->
-                  FluidMsg (FluidFocusOn tid) )] [Html.text text]
-                  )
-                  |> Option.withDefault ~default:(Html.text text)
+                   targetId
+                   |> Option.map ~f:(fun tid ->
+                          Html.div
+                            [ ViewUtils.eventNoPropagation
+                                ~key:("lv-src-" ^ deID tid)
+                                "click"
+                                (fun _ -> FluidMsg (FluidFocusOn tid))
+                            ; Html.class' "jump-src" ]
+                            [Html.text text] )
+                   |> Option.withDefault ~default:(Html.text text)
                  in
                  ([dom], true, ti.startRow)
              | Some (FACVariable (_, Some dval)), _
@@ -5139,8 +5150,7 @@ let viewLiveValue
     [ Html.classList [("live-values", true); ("show", show)]
     ; Html.styles [("top", Js.Float.toString offset ^ "rem")]
     ; Attrs.autofocus false
-    ; Vdom.attribute "" "spellcheck" "false"
-    ]
+    ; Vdom.attribute "" "spellcheck" "false" ]
     liveValue
 
 

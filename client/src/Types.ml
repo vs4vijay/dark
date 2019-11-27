@@ -939,7 +939,7 @@ and modification =
   | ExecutingFunctionBegan of tlid * id
   | ExecutingFunctionRPC of tlid * id * string
   | ExecutingFunctionComplete of (tlid * id) list
-  | MoveCanvasTo of pos
+  | MoveCanvasTo of pos * bool
   | UpdateTraces of traces
   | OverrideTraces of traces
   | UpdateTraceFunctionResult of
@@ -967,7 +967,7 @@ and modification =
   | StartFluidMouseSelecting of tlid
   | UpdateASTCache of tlid * string
   | InitASTCache of handler list * userFunction list
-  | FluidFocus of tlid * id
+  | FluidSetState of fluidState
 
 (* ------------------- *)
 (* Msgs *)
@@ -1358,8 +1358,7 @@ and fluidState =
   ; lastKey : FluidKeyboard.key
   ; ac : fluidAutocompleteState
   ; cp : fluidCommandState
-  ; selectionStart : int option
-  (* The selection ends at newPos *)
+  ; selectionStart : int option (* The selection ends at newPos *)
   ; dvSrc : dval_source }
 
 (* Avatars *)
