@@ -1896,9 +1896,6 @@ let update_ (msg : msg) (m : model) : modification =
           {m with fluidState = {m.fluidState with cp}} )
   | FluidMsg (FluidCommandsClick cmd) ->
       Many [FluidCommands.runCommand m cmd; FluidCommandsClose]
-  | FluidMsg (FluidFocusOn id) ->
-      Debug.loG "FluidFocusOn" id;
-      Fluid.update m (FluidFocusOn id)
   | TakeOffErrorRail (tlid, id) ->
     ( match TL.getTLAndPD m tlid id with
     | Some (tl, Some pd) ->
@@ -1946,6 +1943,8 @@ let update_ (msg : msg) (m : model) : modification =
                   { m with
                     fluidState = {m.fluidState with selectionStart = None} } )
         ]
+  | FluidMsg msg ->
+    Fluid.update m msg
   | ResetToast ->
       TweakModel (fun m -> {m with toast = Defaults.defaultToast})
   | UpdateMinimap data ->

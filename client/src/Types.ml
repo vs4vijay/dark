@@ -989,6 +989,7 @@ and fluidMsg =
   | FluidCommandsFilter of string
   | FluidCommandsClick of command
   | FluidFocusOn of id
+  | FluidClearDvSrc
 
 and msg =
   | GlobalClick of mouseEvent
@@ -1358,7 +1359,8 @@ and fluidState =
   ; ac : fluidAutocompleteState
   ; cp : fluidCommandState
   ; selectionStart : int option
-  (* The selection ends at newPos *) }
+  (* The selection ends at newPos *)
+  ; dvSrc : dval_source }
 
 (* Avatars *)
 and avatar =

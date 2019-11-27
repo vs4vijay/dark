@@ -365,8 +365,7 @@ $error-color: saturate($red, 10%);
   &.is-origin:not(.cursor-on) {
     animation: blinkError 0.3s ease-in-out infinite;
 
-    &:hover {
-      &:after {
+    &:hover:after {
         @extend .tooltip;
         background-color: rgba(30, 30, 30, 0.8);
         padding: 2px;
@@ -374,15 +373,34 @@ $error-color: saturate($red, 10%);
         position: absolute;
         top: -20px;
         left: -5px;
-      }
     }
   }
 
-  &.dark-incomplete.is-origin:not(.cursor-on):hover:after {
+  &.is-origin.jumped-to {
+    //animation: blinkError 0.5s ease-in-out 1s 2;
+    
+    &:after {
+      @extend .tooltip;
+      background-color: rgba(30, 30, 30, 0.8);
+      padding: 2px;
+      width: max-content;
+      position: absolute;
+      top: -20px;
+      left: -5px;
+      opacity: 1;
+      animation: 1s fadeOut 0.5s;
+    }
+    
+  }
+  
+
+  &.dark-incomplete.is-origin:not(.cursor-on):hover:after,
+  &.dark-incomplete.is-origin.jumped-to:after {
     content: "The Incomplete came from here";
   }
 
-  &.dark-error.is-origin:not(.cursor-on):hover:after {
+  &.dark-error.is-origin:not(.cursor-on):hover:after,
+  &.dark-error.is-origin.jumped-to:after {
     content: "The Error came from here";
   }
 }

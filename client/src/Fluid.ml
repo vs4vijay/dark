@@ -4672,6 +4672,9 @@ let update (m : Types.model) (msg : Types.fluidMsg) : Types.modification =
     when (metaKey || ctrlKey) && key = K.Letter 'i' ->
     Debug.loG "Inspect error" ();
     NoChange;
+  | FluidClearDvSrc ->
+    let fluidState = {m.fluidState with dvSrc = SourceNone} in
+    Types.TweakModel (fun m -> {m with fluidState})
   | FluidFocusOn id ->
     tlidOf m.cursorState
     |> Option.andThen ~f:(fun tlid -> Debug.loG "FluidFocusOn" "got tlid"; TL.get m tlid)
@@ -4680,7 +4683,10 @@ let update (m : Types.model) (msg : Types.fluidMsg) : Types.modification =
       | Some expr ->
         Debug.loG "FluidFocusOn" "got expr";
         let ast = fromExpr s expr in
-        let fluidState = moveToEndOfTarget id ast s in
+        let fluidState =
+          let fs = moveToEndOfTarget id ast s in
+          {fs with dvSrc = SourceId id}
+        in
         Debug.loG "FluidFocusOn modify states" (s, fluidState);
         let moveCanvas = Viewport.moveToToken id tl in
         Debug.loG "FluidFocusOn centerOnToken" moveCanvas;
@@ -4975,6 +4981,7 @@ let toHtml ~(vs : ViewUtils.viewState) ~tlid ~state (ast : ast) :
           ; (* This expression is the source of an incomplete propogated into another   expression, where the cursor is currently on *)
             ( "is-origin"
             , sourceOfCurrentToken |> Option.isSomeEqualTo ~value:analysisId )
+          ; ("jumped-to", match state.dvSrc with SourceNone -> false | SourceId id -> id = tokenId)
           ]
         in
         Html.span
@@ -5018,6 +5025,9 @@ let toHtml ~(vs : ViewUtils.viewState) ~tlid ~state (ast : ast) :
                     (* This will happen if it gets a selection and there is no
                  focused node (weird browser problem?) *)
                     IgnoreMsg )
+          ; ViewUtils.onAnimationEnd
+              ~key:("anim-end" ^ idStr)
+              ~listener: (fun msg -> if msg = "fadeOut" then FluidMsg FluidClearDvSrc else IgnoreMsg )
           ; ViewUtils.eventNoPropagation
               ~key:
                 ( "fluid-selection-click-"
