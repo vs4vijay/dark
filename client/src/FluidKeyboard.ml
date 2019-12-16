@@ -154,9 +154,11 @@ let fromKeyboardCode
   | 34 ->
       PageDown
   | 35 ->
-      End
+      (* End *)
+      if ctrl then GoToStartOfLine else GoToEndOfLine
   | 36 ->
-      Home
+      (* Home *)
+      if ctrl then GoToEndOfLine else GoToStartOfLine
   | 37 ->
       if meta
       then GoToStartOfLine
