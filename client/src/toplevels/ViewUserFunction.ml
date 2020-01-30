@@ -22,6 +22,7 @@ type exeFunction =
   | CannotExecute of string
   | IsExecuting
 
+
 let viewUserFnName (vs : viewState) (c : htmlConfig list) (v : string blankOr) :
     msg Html.html =
   viewText FnName vs ((enterable :: idConfigs) @ c) v
@@ -133,18 +134,23 @@ let viewExecuteBtn (vs : viewState) (fn : userFunction) : msg Html.html =
     ; Html.title title ]
     [fontAwesome "redo"]
 
+let viewParamSpace (index : int) : msg Html.html =
+  Html.div [Html.class' "col space"; Vdom.attribute "" "data-pos" (string_of_int index) ] []
 
-let viewParam (fn : userFunction) (vs : viewState) (p : userFunctionParameter) :
-    msg Html.html =
-  Html.div
-    [Html.class' "col param"]
-    [ ( if vs.permission = Some ReadWrite
-      then viewKillParameterBtn fn p
-      else Vdom.noNode )
-    ; viewParamName vs [wc "name"] p.ufpName
-   (* ; Html.div [Html.class' "param-divider"] [Html.text ":"] *)
-    ; viewParamTipe vs [wc "type"] p.ufpTipe 
-    ; fontAwesome "grip-lines"]
+let viewParam (fn : userFunction) (vs : viewState) (index : int) (p : userFunctionParameter) :
+    msg Html.html list =
+  let param =
+    Html.div
+      [Html.class' "col param"; Tea.Html2.Attributes.draggable "true"; Vdom.attribute "" "data-pos" (string_of_int index)]
+      [ ( if vs.permission = Some ReadWrite
+        then viewKillParameterBtn fn p
+        else Vdom.noNode )
+      ; viewParamName vs [wc "name"] p.ufpName
+      ; viewParamTipe vs [wc "type"] p.ufpTipe 
+      ; fontAwesome "grip-lines"]
+  in
+  let space = viewParamSpace index in
+  [space; param]
 
 
 let viewMetadata (vs : viewState) (fn : userFunction) : msg Html.html =
@@ -190,8 +196,8 @@ let viewMetadata (vs : viewState) (fn : userFunction) : msg Html.html =
       ; Html.div [Html.class' "fn-actions"] [viewExecuteBtn vs fn; menuView] ]
   in
   let paramRows =
-    let params = fn.ufMetadata.ufmParameters |> List.map ~f:(viewParam fn vs) in
-    Html.div [Html.class' "params"] (params @ [addParamBtn])
+    let params = fn.ufMetadata.ufmParameters |> List.indexedMap ~f:(viewParam fn vs) |> List.flatten in
+    Html.div [Html.id "fnparams" ; Html.class' "params"] (params @ [viewParamSpace (List.length fn.ufMetadata.ufmParameters); addParamBtn])
   in
   Html.div [Html.class' "fn-header"] [titleRow; paramRows]
 

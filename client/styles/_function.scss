@@ -42,16 +42,13 @@
     display: flex;
     align-items: flex-start;
     flex-direction: column;
-    padding-left: $spacing-medium;
+    padding: 0 $spacing-medium;
   }
 
   .col {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin-bottom: 4px;
-    margin-top: 4px;
-    // text-align: center;
 
     .param-divider {
       font-size: 10px;
@@ -97,9 +94,24 @@
   .col.param {
     width: 100%;
 
+    &.dragging {
+      opacity: 0.3;
+    }
+
     i.fa-grip-lines {
       color: $grey1;
       font-size: 12px;
+      cursor: ns-resize;
+    }
+  }
+
+  .col.space {
+    height:1.0em;
+    width: 100%;
+
+    &.over {
+      border: dashed 1px $grey2;
+      background-color: $black1;
     }
   }
 
@@ -107,6 +119,7 @@
     width: 100%;
     justify-content: flex-start;
     align-items: center;
+    margin-bottom: 0.5em;
 
     .parameter-btn.add i {
       margin-right: 8px;

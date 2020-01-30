@@ -472,6 +472,95 @@ function addWheelListener(elem) {
   return listener(elem);
 }
 
+/* Until user actually commits an order change we don't want to bother bs-tea to process any messages or re-render to any model change. */
+function attachFnDragListeners(){
+  const canvas = document.getElementById('canvas');
+  //exist early if not in function space
+  if (!canvas.classList.contains('focused-fn')){ console.log("not in fn space"); return; }
+
+  var draggingElem = null;
+  var overElem = null;
+
+  const getPos = e => parseInt(e.getAttribute('data-pos'));
+
+  console.log('attach listeners to params');
+  const params = document.querySelectorAll('.col.param');
+  for(var i=0; i < params.length; i++){
+    var p = params[i];
+    p.addEventListener('dragstart', function(evt){
+      const content = evt.target.innerHTML;
+      draggingElem = evt.target;
+
+      draggingElem.classList.add('dragging');
+      // TODO(alice) trigger event to send to msg? or do rendering stuff here?
+      
+      evt.dataTransfer.setData("text/plain", content);
+      evt.dataTransfer.effectAllowed = "move";
+    })
+
+    p.addEventListener('dragend', function(evt){
+      evt.preventDefault();
+
+      if (draggingElem) draggingElem.classList.remove('dragging');
+      if (overElem) overElem.classList.remove('over');
+
+      draggingElem = null;
+      overElem = null;
+    })
+  }
+
+  const spaces = document.querySelectorAll('.col.space');
+  for(var j=0; j<spaces.length; j++){
+    var s = spaces[j];
+    s.addEventListener('dragover', function(evt){
+      evt.preventDefault();
+      evt.dataTransfer.dropEffect = "move";
+    })
+    s.addEventListener('dragenter',function(evt){
+      // clear out styling for previously entered space
+      if (overElem){
+        overElem.classList.remove('over');
+      }
+
+      const space = evt.target;
+
+      // if we are not really moving to a new pos don't show style
+      if(draggingElem){
+        const oldPos = getPos(draggingElem);
+        const pos = getPos(space);
+        if (oldPos === pos || (oldPos+1) === pos) return;
+      }
+
+      overElem = space;
+      overElem.classList.add('over');
+
+    })
+    s.addEventListener('dragLeave',function(evt){
+      evt.target.classList.remove('over');
+      overElem = null;
+    })
+    s.addEventListener('drop',function(evt){
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (draggingElem === null) {
+        console.error('lost reference to target')
+        return
+      }
+
+      const space = evt.target;
+      const newPos = getPos(space);
+      const oldPos = getPos(draggingElem);
+
+      console.log("moving from "+oldPos +" to "+newPos);
+
+      var event = new CustomEvent("fnParamMoved", { detail: {oldPos, newPos} });
+      document.dispatchEvent(event);
+
+    })
+  }
+  
+}
+
 setTimeout(function() {
   const canvasName = new URL(window.location).pathname.split("/")[2];
   const params = JSON.stringify({
@@ -562,6 +651,10 @@ setTimeout(function() {
     });
   }
 }, 1);
+
+window.onload = function(){
+  attachFnDragListeners();
+}
 // ---------------------------
 // Exports
 // ---------------------------
