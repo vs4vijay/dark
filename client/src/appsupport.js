@@ -553,8 +553,13 @@ function attachFnDragListeners(){
 
       console.log("moving from "+oldPos +" to "+newPos);
 
-      var event = new CustomEvent("fnParamMoved", { detail: {oldPos, newPos} });
-      document.dispatchEvent(event);
+      //GET TLID
+      const matches = /fn=(\d+)/.exec(window.location.hash)
+      if(matches.index === 1){
+        const tlid = matches[1];
+        var event = new CustomEvent("fnParamMoved", { detail: {tlid, oldPos, newPos} });
+        document.dispatchEvent(event);
+      }
 
     })
   }

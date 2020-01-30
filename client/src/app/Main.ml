@@ -1949,14 +1949,21 @@ let update (m : model) (msg : msg) : model * msg Cmd.t =
 let subscriptions (m : model) : msg Tea.Sub.t =
   let keySubs = [Keyboard.downs (fun x -> GlobalKeyPress x)] in
   let dragSubs =
-    match m.cursorState with
-    (* we use IDs here because the node will change *)
-    (* before they're triggered *)
-    | Dragging (id, _, _, _) ->
-        let listenerKey = "mouse_moves_" ^ deTLID id in
-        [Native.DarkMouse.moves ~key:listenerKey (fun x -> DragToplevel (id, x))]
-    | _ ->
-        []
+    let dragTL = 
+      match m.cursorState with
+      (* we use IDs here because the node will change *)
+      (* before they're triggered *)
+      | Dragging (id, _, _, _) ->
+          let listenerKey = "mouse_moves_" ^ deTLID id in
+          [Native.DarkMouse.moves ~key:listenerKey (fun x -> DragToplevel (id, x))]
+      | _ ->
+          []
+    in
+    (UserFunctions.OnParamMoved.listen ~key:"on_fnp_moved" (fun p ->
+      match p with
+      | {tlid; oldPos; newPos} -> Debug.loG "parsed" (tlid, oldPos, newPos); IgnoreMsg
+      | _ -> Debug.loG "error parsing details" (); IgnoreMsg
+    )) :: dragTL
   in
   let timers =
     if m.editorSettings.runTimers

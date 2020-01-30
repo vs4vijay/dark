@@ -275,3 +275,19 @@ let moveParams (m : model) (target : target) (direction : direction) : modificat
     SetUserFunctions ([newFn], [], true)
   )
   |> Option.withDefault ~default:NoChange
+(*
+  let traceID = map (fun id -> (id : traceID)) string in
+  let tlids = list (map (fun id -> TLID id) Native.Decoder.wireIdentifier) in
+  field "detail" (Native.Decoder.tuple2 traceID tlids)
+*)
+module OnParamMoved = struct
+  let decode =
+    let open Tea.Json.Decoder in
+    let decodeDetail =
+      Decoder (fun json -> Tea_result.Ok (Obj.magic json))
+     (* (field "tlid" string, field "oldPos" int, field "newPos" int) *)
+    in
+    map (fun msg -> msg) (field "detail" decodeDetail)
+
+  let listen ~key tagger = Native.registerGlobal "fnParamMoved" key tagger decode
+end

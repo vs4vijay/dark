@@ -167,6 +167,13 @@ let decodeAnimEvent (fn : string -> 'a) j : 'a =
   fn (field "animationName" string j)
 
 
+let decodeChangePosEvent (fn : (int * int) -> 'a) j : 'a =
+  let open Json.Decode in
+  let decodeChange j =
+    (field "oldPos" int j, field "newPos" int j)
+  in
+  fn (field "detail" decodeChange j)
+
 let eventBoth ~(key : string) (event : string) (constructor : mouseEvent -> msg)
     : msg Vdom.property =
   Tea.Html.onWithOptions
