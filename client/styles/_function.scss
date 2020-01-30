@@ -48,9 +48,10 @@
   .col {
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
     margin-bottom: 4px;
     margin-top: 4px;
-    text-align: center;
+    // text-align: center;
 
     .param-divider {
       font-size: 10px;
@@ -93,7 +94,17 @@
     }
   }
 
+  .col.param {
+    width: 100%;
+
+    i.fa-grip-lines {
+      color: $grey1;
+      font-size: 12px;
+    }
+  }
+
   .col.new-parameter {
+    width: 100%;
     justify-content: flex-start;
     align-items: center;
 
@@ -105,6 +116,7 @@
       color: $grey3;
       font-style: italic;
       font-size: 0.7 * $code-font-size;
+      width: calc(90% - 16px);
     }
 
     &:hover {

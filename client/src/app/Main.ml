@@ -956,6 +956,10 @@ let rec updateMod (mod_ : modification) ((m, cmd) : model * msg Cmd.t) :
         ({m with fluidState}, Cmd.none)
     | TLMenuUpdate (tlid, msg) ->
         (TLMenu.update m tlid msg, Cmd.none)
+    | MoveFnParam (target, direction) ->
+        (match UserFunctions.moveParams m target direction with
+        | NoChange -> (m, Cmd.none)
+        | mod_ -> updateMod mod_ (m, cmd))
     (* applied from left to right *)
     | Many mods ->
         List.foldl ~f:updateMod ~init:(m, Cmd.none) mods

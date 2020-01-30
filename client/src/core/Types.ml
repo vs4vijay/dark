@@ -127,6 +127,10 @@ and size =
 
 and box = pos * size
 
+and direction =
+  | GoUp
+  | GoDown
+
 (* ---------------------- *)
 (* Types *)
 (* ---------------------- *)
@@ -1085,6 +1089,7 @@ and modification =
   | InitASTCache of handler list * userFunction list
   | FluidSetState of fluidState
   | TLMenuUpdate of tlid * menuMsg
+  | MoveFnParam of target * direction
 
 (* ------------------- *)
 (* Msgs *)

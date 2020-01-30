@@ -97,6 +97,8 @@ let replaceFnName
     {uf with ufMetadata = newMetadata}
   else uf
 
+let paramToName (fp: userFunctionParameter) : string =
+  match fp.ufpName with F (_, name) -> name | Blank _ -> "_"
 
 let allParamNames (uf : userFunction) : string list =
   uf
@@ -231,3 +233,45 @@ let inputToArgs (f : userFunction) (input : inputValueDict) : dval list =
              StrDict.get ~key:name input |> Option.withDefault ~default
          | _ ->
              default)
+
+
+let moveParams (m : model) (target : target) (direction : direction) : modification =
+  let tlid, entry = target in
+  m.userFunctions |> TLIDDict.get ~tlid
+  |> Option.andThen ~f:(fun fn ->
+    let params = fn.ufMetadata.ufmParameters in
+    let moveDownAt index =
+      (* Swap this item with next item *)
+      match (List.getAt ~index params, List.getAt ~index:(index + 1) params) with
+      | Some item, Some next ->
+        let beginHalf = List.take ~count:index params in
+        let endHalf = List.drop ~count:(index + 2) params in
+        let ufmParameters = beginHalf @ (next :: item :: endHalf) in
+        Some {fn with ufMetadata = {fn.ufMetadata with ufmParameters }}
+      | _ -> None
+    in
+    let moveUpAt index =
+      (* Swap this item with previous item *)
+      match (List.getAt ~index:(index - 1) params, List.getAt ~index params) with
+      | Some prev, Some item ->
+        let beginHalf = List.take ~count:(index - 1) params in
+        let endHalf = List.drop ~count:(index + 1) params in
+        let ufmParameters = beginHalf @ (item :: prev :: endHalf) in
+        Some {fn with ufMetadata = {fn.ufMetadata with ufmParameters }}
+      | _ -> None
+    in
+    match entry with
+    | PParamName field ->
+      List.findIndex ~f:(fun p -> p.ufpName = field) params
+      |> Option.andThen ~f:(fun index ->
+        if direction = GoUp
+        then moveUpAt index
+        else moveDownAt index
+      )
+    | _ -> None
+  )
+  |> Option.map ~f:(fun newFn ->
+    Debug.loG "updating params" (allParamNames newFn |> Belt.List.toArray);
+    SetUserFunctions ([newFn], [], true)
+  )
+  |> Option.withDefault ~default:NoChange

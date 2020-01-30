@@ -38,6 +38,10 @@ let undo_redo (m : model) (redo : bool) : modification =
   | None ->
       NoChange
 
+let isOnFnParam (m : model) : bool =
+    match m.complete.target with
+    | Some (_, PParamName _) -> true
+    | _ -> false
 
 let openOmnibox (m : model) : modification =
   match m.currentPage with
@@ -174,8 +178,14 @@ let defaultHandler (event : Keyboard.keyEvent) (m : model) : modification =
                 Many [Deselect; AutocompleteMod ACReset]
             | Filling (tlid, p) ->
                 Many [Select (tlid, STID p); AutocompleteMod ACReset] )
+          | Key.Up when event.shiftKey && isOnFnParam m ->
+            m.complete.target |> Option.map ~f:(fun target -> MoveFnParam (target, GoUp))
+            |> Option.withDefault ~default:NoChange
           | Key.Up ->
               AutocompleteMod ACSelectUp (* NB: see `stopKeys` in ui.html *)
+          | Key.Down when event.shiftKey && isOnFnParam m ->
+              m.complete.target |> Option.map ~f:(fun target -> MoveFnParam (target, GoDown))
+              |> Option.withDefault ~default:NoChange
           | Key.Down ->
               AutocompleteMod ACSelectDown (* NB: see `stopKeys` in ui.html *)
           | Key.Backspace ->

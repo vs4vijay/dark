@@ -137,13 +137,14 @@ let viewExecuteBtn (vs : viewState) (fn : userFunction) : msg Html.html =
 let viewParam (fn : userFunction) (vs : viewState) (p : userFunctionParameter) :
     msg Html.html =
   Html.div
-    [Html.class' "col"]
+    [Html.class' "col param"]
     [ ( if vs.permission = Some ReadWrite
       then viewKillParameterBtn fn p
       else Vdom.noNode )
     ; viewParamName vs [wc "name"] p.ufpName
-    ; Html.div [Html.class' "param-divider"] [Html.text ":"]
-    ; viewParamTipe vs [wc "type"] p.ufpTipe ]
+   (* ; Html.div [Html.class' "param-divider"] [Html.text ":"] *)
+    ; viewParamTipe vs [wc "type"] p.ufpTipe 
+    ; fontAwesome "grip-lines"]
 
 
 let viewMetadata (vs : viewState) (fn : userFunction) : msg Html.html =
