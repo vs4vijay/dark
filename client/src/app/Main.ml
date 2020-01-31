@@ -960,6 +960,19 @@ let rec updateMod (mod_ : modification) ((m, cmd) : model * msg Cmd.t) :
         (match UserFunctions.moveParams m target direction with
         | NoChange -> (m, Cmd.none)
         | mod_ -> updateMod mod_ (m, cmd))
+    | UpdateFnCallArgs (tlid, fnName, oldPos, newPos) ->
+      let astMods = 
+        Introspect.allUsedIn tlid m
+        |> List.filterMap ~f:(fun tl ->
+          match TL.getAST tl with
+          | Some ast -> Some (tl, ast)
+          | None -> None
+        )
+        |> List.map ~f:(fun (tl, ast) ->
+        TL.setASTMod tl (AST.reorderFnCallArgs fnName oldPos newPos ast)
+        )
+      in
+      updateMod (Many astMods) (m, cmd)
     (* applied from left to right *)
     | Many mods ->
         List.foldl ~f:updateMod ~init:(m, Cmd.none) mods

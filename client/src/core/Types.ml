@@ -1090,6 +1090,7 @@ and modification =
   | FluidSetState of fluidState
   | TLMenuUpdate of tlid * menuMsg
   | MoveFnParam of target * direction
+  | UpdateFnCallArgs of tlid * fnName * int * int
 
 (* ------------------- *)
 (* Msgs *)

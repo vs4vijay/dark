@@ -280,27 +280,15 @@ let draggedParams (fn : userFunction) (oldPos: int) (newPos :int) : modification
   let updateFnWithParams params =
     let newFn = {fn with ufMetadata = {fn.ufMetadata with ufmParameters = params}} in
       Debug.loG "moved up" (allParamNames newFn |> Belt.List.toArray);
-      SetUserFunctions ([newFn], [], true)
+      let propChange =
+        match fn.ufMetadata.ufmName with
+        | F (_, name) -> [UpdateFnCallArgs (fn.ufTLID, name, oldPos, newPos)]
+        | Blank _ -> []
+      in
+      Many (SetUserFunctions ([newFn], [], true) :: propChange)
   in
   let params = fn.ufMetadata.ufmParameters in
-  if newPos < oldPos (* move to a place above *)
-  then
-    match List.getAt ~index:oldPos params with
-    | Some value ->
-      let top, bottom = List.splitOn ~index:oldPos params in
-      (List.insertAt ~index:newPos ~value top) @ bottom
-      |> updateFnWithParams
-    | None -> NoChange
-  else if (oldPos + 1) < newPos (* move to a place below *)
-  then
-    match List.getAt ~index:oldPos params with
-    | Some value ->
-      let top, bottom = List.splitOn ~index:oldPos params in
-      let index = newPos - (oldPos+1) in
-      top @ (List.insertAt ~index ~value bottom)
-      |> updateFnWithParams
-    | None -> NoChange
-  else NoChange
+  updateFnWithParams (List.reorder ~oldPos ~newPos params)
 
 module OnParamMoved = struct
   let decode =
