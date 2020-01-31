@@ -234,73 +234,42 @@ let inputToArgs (f : userFunction) (input : inputValueDict) : dval list =
          | _ ->
              default)
 
-
-let moveParams (m : model) (target : target) (direction : direction) : modification =
-  let tlid, entry = target in
-  m.userFunctions |> TLIDDict.get ~tlid
-  |> Option.andThen ~f:(fun fn ->
-    let params = fn.ufMetadata.ufmParameters in
-    let moveDownAt index =
-      (* Swap this item with next item *)
-      match (List.getAt ~index params, List.getAt ~index:(index + 1) params) with
-      | Some item, Some next ->
-        let beginHalf = List.take ~count:index params in
-        let endHalf = List.drop ~count:(index + 2) params in
-        let ufmParameters = beginHalf @ (next :: item :: endHalf) in
-        Some {fn with ufMetadata = {fn.ufMetadata with ufmParameters }}
-      | _ -> None
-    in
-    let moveUpAt index =
-      (* Swap this item with previous item *)
-      match (List.getAt ~index:(index - 1) params, List.getAt ~index params) with
-      | Some prev, Some item ->
-        let beginHalf = List.take ~count:(index - 1) params in
-        let endHalf = List.drop ~count:(index + 1) params in
-        let ufmParameters = beginHalf @ (item :: prev :: endHalf) in
-        Some {fn with ufMetadata = {fn.ufMetadata with ufmParameters }}
-      | _ -> None
-    in
-    match entry with
-    | PParamName field ->
-      List.findIndex ~f:(fun p -> p.ufpName = field) params
-      |> Option.andThen ~f:(fun index ->
-        if direction = GoUp
-        then moveUpAt index
-        else moveDownAt index
-      )
-    | _ -> None
-  )
-  |> Option.map ~f:(fun newFn ->
-    Debug.loG "updating params" (allParamNames newFn |> Belt.List.toArray);
-    SetUserFunctions ([newFn], [], true)
-  )
-  |> Option.withDefault ~default:NoChange
-
-let draggedParams (fn : userFunction) (oldPos: int) (newPos :int) : modification =
+let moveParams (fn : userFunction) (oldPos: int) (newPos :int) : modification =
   let updateFnWithParams params =
     let newFn = {fn with ufMetadata = {fn.ufMetadata with ufmParameters = params}} in
       Debug.loG "moved up" (allParamNames newFn |> Belt.List.toArray);
-      let propChange =
+      let updateArgs =
         match fn.ufMetadata.ufmName with
         | F (_, name) -> [UpdateFnCallArgs (fn.ufTLID, name, oldPos, newPos)]
         | Blank _ -> []
       in
-      Many (SetUserFunctions ([newFn], [], true) :: propChange)
+      Many (SetUserFunctions ([newFn], [], true) :: updateArgs)
   in
   let params = fn.ufMetadata.ufmParameters in
   updateFnWithParams (List.reorder ~oldPos ~newPos params)
+
+
+let shiftParams (m : model) (target : target) (direction : direction) : modification =
+  let tlid, entry = target in
+  m.userFunctions |> TLIDDict.get ~tlid
+  |> Option.andThen ~f:(fun fn ->
+    let params = fn.ufMetadata.ufmParameters in
+    match entry with
+    | PParamName field ->
+      List.findIndex ~f:(fun p -> p.ufpName = field) params
+      |> Option.andThen ~f:(fun index ->
+        let newPos = index + (if direction = GoUp then -1 else 1) in
+        Some (moveParams fn index newPos)
+      )
+    | _ -> None
+  )
+  |> Option.withDefault ~default:NoChange
 
 module OnParamMoved = struct
   let decode =
     let open Tea.Json.Decoder in
     let decodeDetail =
       map3 (fun a b c -> a, b, c) (field "tlid" string) (field "oldPos" int) (field "newPos" int)
-     (* 
-     Decoder (fun json ->
-      Tea_result.Ok (Obj.magic json) 
-     )
-     *)
-    (* (field "tlid" string, field "oldPos" int, field "newPos" int) *)
     in
     map (fun msg -> msg) (field "detail" decodeDetail)
 

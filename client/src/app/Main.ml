@@ -957,7 +957,7 @@ let rec updateMod (mod_ : modification) ((m, cmd) : model * msg Cmd.t) :
     | TLMenuUpdate (tlid, msg) ->
         (TLMenu.update m tlid msg, Cmd.none)
     | MoveFnParam (target, direction) ->
-        (match UserFunctions.moveParams m target direction with
+        (match UserFunctions.shiftParams m target direction with
         | NoChange -> (m, Cmd.none)
         | mod_ -> updateMod mod_ (m, cmd))
     | UpdateFnCallArgs (tlid, fnName, oldPos, newPos) ->
@@ -1942,7 +1942,7 @@ let update_ (msg : msg) (m : model) : modification =
     then
       match TLIDDict.get ~tlid m.userFunctions with
       | Some fn ->
-        UserFunctions.draggedParams fn oldPos newPos
+        UserFunctions.moveParams fn oldPos newPos
       | None -> NoChange
     else NoChange
 
