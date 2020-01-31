@@ -487,12 +487,12 @@ function attachFnDragListeners(){
   const params = document.querySelectorAll('.col.param');
   for(var i=0; i < params.length; i++){
     var p = params[i];
+
     p.addEventListener('dragstart', function(evt){
       const content = evt.target.innerHTML;
       draggingElem = evt.target;
-
+    
       draggingElem.classList.add('dragging');
-      // TODO(alice) trigger event to send to msg? or do rendering stuff here?
       
       evt.dataTransfer.setData("text/plain", content);
       evt.dataTransfer.effectAllowed = "move";

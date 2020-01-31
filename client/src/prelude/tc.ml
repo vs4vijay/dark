@@ -125,6 +125,10 @@ module List = struct
   let range (start : int) (end_ : int) : 'a list =
     let length = end_ - start in
     if length < 0 then [] else Belt.List.makeBy length (fun i -> i + start)
+
+  (* Takes everything before and after, but not including nexted element *)
+  let splitOn ~(index : int) (l : 'a list) : 'a list * 'a list =
+    (take ~count:index l, drop ~count:(index+1) l)
 end
 
 module Float = struct

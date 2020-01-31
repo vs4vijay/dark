@@ -1247,6 +1247,7 @@ and msg =
   | UpdateWorkerScheduleCallback of (string StrDict.t, httpError) Tea.Result.t
       [@printer opaque "UpdateWorkerScheduleCallback"]
   | NewTabFromTLMenu of string * tlid
+  | DragFnParam of tlid * int * int
 
 (* ----------------------------- *)
 (* AB tests *)

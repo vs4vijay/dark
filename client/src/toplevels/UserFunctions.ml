@@ -275,17 +275,44 @@ let moveParams (m : model) (target : target) (direction : direction) : modificat
     SetUserFunctions ([newFn], [], true)
   )
   |> Option.withDefault ~default:NoChange
-(*
-  let traceID = map (fun id -> (id : traceID)) string in
-  let tlids = list (map (fun id -> TLID id) Native.Decoder.wireIdentifier) in
-  field "detail" (Native.Decoder.tuple2 traceID tlids)
-*)
+
+let draggedParams (fn : userFunction) (oldPos: int) (newPos :int) : modification =
+  let updateFnWithParams params =
+    let newFn = {fn with ufMetadata = {fn.ufMetadata with ufmParameters = params}} in
+      Debug.loG "moved up" (allParamNames newFn |> Belt.List.toArray);
+      SetUserFunctions ([newFn], [], true)
+  in
+  let params = fn.ufMetadata.ufmParameters in
+  if newPos < oldPos (* move to a place above *)
+  then
+    match List.getAt ~index:oldPos params with
+    | Some value ->
+      let top, bottom = List.splitOn ~index:oldPos params in
+      (List.insertAt ~index:newPos ~value top) @ bottom
+      |> updateFnWithParams
+    | None -> NoChange
+  else if (oldPos + 1) < newPos (* move to a place below *)
+  then
+    match List.getAt ~index:oldPos params with
+    | Some value ->
+      let top, bottom = List.splitOn ~index:oldPos params in
+      let index = newPos - (oldPos+1) in
+      top @ (List.insertAt ~index ~value bottom)
+      |> updateFnWithParams
+    | None -> NoChange
+  else NoChange
+
 module OnParamMoved = struct
   let decode =
     let open Tea.Json.Decoder in
     let decodeDetail =
-      Decoder (fun json -> Tea_result.Ok (Obj.magic json))
-     (* (field "tlid" string, field "oldPos" int, field "newPos" int) *)
+      map3 (fun a b c -> a, b, c) (field "tlid" string) (field "oldPos" int) (field "newPos" int)
+     (* 
+     Decoder (fun json ->
+      Tea_result.Ok (Obj.magic json) 
+     )
+     *)
+    (* (field "tlid" string, field "oldPos" int, field "newPos" int) *)
     in
     map (fun msg -> msg) (field "detail" decodeDetail)
 

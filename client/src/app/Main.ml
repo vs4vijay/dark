@@ -1924,6 +1924,15 @@ let update_ (msg : msg) (m : model) : modification =
   | NewTabFromTLMenu (url, tlid) ->
       Native.Window.openUrl url "_blank" ;
       TLMenuUpdate (tlid, CloseMenu)
+  | DragFnParam (tlid, oldPos, newPos) ->
+    if Page.tlidOf m.currentPage = Some tlid
+    then
+      match TLIDDict.get ~tlid m.userFunctions with
+      | Some fn ->
+        UserFunctions.draggedParams fn oldPos newPos
+      | None -> NoChange
+    else NoChange
+
 
 
 let rec filter_read_only (m : model) (modification : modification) =
@@ -1960,9 +1969,8 @@ let subscriptions (m : model) : msg Tea.Sub.t =
           []
     in
     (UserFunctions.OnParamMoved.listen ~key:"on_fnp_moved" (fun p ->
-      match p with
-      | {tlid; oldPos; newPos} -> Debug.loG "parsed" (tlid, oldPos, newPos); IgnoreMsg
-      | _ -> Debug.loG "error parsing details" (); IgnoreMsg
+      let fnID, oldPos, newPos = p in
+      DragFnParam (TLID fnID, oldPos, newPos)
     )) :: dragTL
   in
   let timers =

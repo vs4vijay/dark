@@ -42,7 +42,6 @@
     display: flex;
     align-items: flex-start;
     flex-direction: column;
-    padding: 0 $spacing-medium;
   }
 
   .col {
@@ -93,9 +92,18 @@
 
   .col.param {
     width: 100%;
+    padding: 0 $spacing-medium;
+    box-sizing: border-box;
 
     &.dragging {
       opacity: 0.3;
+    }
+
+    &.just-moved {
+        animation-duration: 1.5s;
+        animation-name: blinkBackground;
+        animation-iteration-count: 5;
+        animation-direction: alternate;
     }
 
     i.fa-grip-lines {
@@ -120,6 +128,7 @@
     justify-content: flex-start;
     align-items: center;
     margin-bottom: 0.5em;
+    padding: 0 $spacing-medium;
 
     .parameter-btn.add i {
       margin-right: 8px;
