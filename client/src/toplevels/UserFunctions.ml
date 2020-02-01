@@ -243,7 +243,7 @@ let moveParams (fn : userFunction) (oldPos: int) (newPos :int) : modification =
         | F (_, name) -> [UpdateFnCallArgs (fn.ufTLID, name, oldPos, newPos)]
         | Blank _ -> []
       in
-      Many (SetUserFunctions ([newFn], [], true) :: updateArgs)
+      Many (SetUserFunctions ([newFn], [], true) :: CleanUpFnP :: updateArgs)
   in
   let params = fn.ufMetadata.ufmParameters in
   updateFnWithParams (List.reorder ~oldPos ~newPos params)

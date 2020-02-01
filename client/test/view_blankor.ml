@@ -56,7 +56,8 @@ let run () =
             ; workerStats = None
             ; tokens = []
             ; menuState = {isOpen = false}
-            ; isExecuting = false }
+            ; isExecuting = false
+            ; fnSpace = { dragging = None; dragOver = None } }
           in
           expect (placeHolderFor vs ParamName) |> toBe "param name") ;
       ()) ;

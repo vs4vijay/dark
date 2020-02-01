@@ -154,4 +154,6 @@ let defaultModel : model =
   ; editorSettings = {showFluidDebugger = false; runTimers = true}
   ; teaDebuggerEnabled = false
   ; unsupportedBrowser = false
-  ; tlMenus = TLIDDict.empty }
+  ; tlMenus = TLIDDict.empty
+  ; currentUserFn = { dragging = None; dragOver = None }
+}

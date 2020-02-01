@@ -657,9 +657,6 @@ setTimeout(function() {
   }
 }, 1);
 
-window.onload = function(){
-  attachFnDragListeners();
-}
 // ---------------------------
 // Exports
 // ---------------------------

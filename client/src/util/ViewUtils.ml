@@ -36,7 +36,8 @@ type viewState =
       (* Calculate the tokens once per render only *)
       FluidToken.tokenInfo list
   ; menuState : menuState
-  ; isExecuting : bool }
+  ; isExecuting : bool
+  ; fnSpace: ufDnD}
 
 (* ----------------------------- *)
 (* Events *)
@@ -139,7 +140,8 @@ let createVS (m : model) (tl : toplevel) (tokens : FluidToken.tokenInfo list) :
         (* Doing explicit match here just to be safe, even though we can probably assume you can't have handlerProp without it being a handler from code above. *)
         (match hp with Some p -> p.execution = Executing | _ -> false)
       | TLDB _ | TLTipe _ | TLGroup _ ->
-          false ) }
+          false )
+  ; fnSpace = m.currentUserFn}
 
 
 let fontAwesome (name : string) : msg Html.html =
@@ -173,6 +175,12 @@ let decodeChangePosEvent (fn : (int * int) -> 'a) j : 'a =
     (field "oldPos" int j, field "newPos" int j)
   in
   fn (field "detail" decodeChange j)
+
+(*  
+let decodeDragEvent (fn: 'a -> 'b) : 'b =
+  let open Tea.Json.Decoder in
+  fn (Decoder (fun json -> Tea_result.Ok (Obj.magic json)))
+*)
 
 let eventBoth ~(key : string) (event : string) (constructor : mouseEvent -> msg)
     : msg Vdom.property =
@@ -230,10 +238,18 @@ let onAnimationEnd ~(key : string) ~(listener : string -> msg) :
     {stopPropagation = false; preventDefault = true}
     (Decoders.wrapDecoder (decodeAnimEvent listener))
 
+(* Generic event, the the listener handle and do what it wants with the event object *)
+let onEvent ~(event : string) ~(key : string) ?(preventDefault = true) (listener: Web.Node.event -> msg) : msg Vdom.property =
+  Tea.Html.onCB
+      event
+      key
+      (fun evt ->
+        if preventDefault then evt##preventDefault () ;
+        Some (listener evt)
+      )
 
 let nothingMouseEvent (name : string) : msg Vdom.property =
   eventNoPropagation ~key:"" name (fun _ -> IgnoreMsg)
-
 
 let placeHtml (pos : pos) (classes : 'a list) (html : msg Html.html list) :
     msg Html.html =

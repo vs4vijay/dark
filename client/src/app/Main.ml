@@ -973,6 +973,8 @@ let rec updateMod (mod_ : modification) ((m, cmd) : model * msg Cmd.t) :
         )
       in
       updateMod (Many astMods) (m, cmd)
+    | CleanUpFnP ->
+      ({m with currentUserFn = {dragOver = None; dragging = None} }, Cmd.none)
     (* applied from left to right *)
     | Many mods ->
         List.foldl ~f:updateMod ~init:(m, Cmd.none) mods
@@ -1945,7 +1947,25 @@ let update_ (msg : msg) (m : model) : modification =
         UserFunctions.moveParams fn oldPos newPos
       | None -> NoChange
     else NoChange
-
+  | UFPDragStart (index, id) ->
+    Debug.loG "UFPDragStart" (index);
+    TweakModel (fun m -> {m with currentUserFn = {m.currentUserFn with dragging = Some (index, id)} })
+  | UFPDragEnter index ->
+    Debug.loG "UFPDragEnter" index; 
+    TweakModel (fun m -> {m with currentUserFn = {m.currentUserFn with dragOver = Some index} }) 
+  | UFPDragLeave ->
+    Debug.loG "UFPDragLeave" (); 
+    TweakModel (fun m -> {m with currentUserFn = {m.currentUserFn with dragOver = None} }) 
+  | UFPDropOn newPos ->
+    Debug.loG "UFPDropOn" newPos;
+    Page.tlidOf m.currentPage
+    |> Option.andThen ~f:(fun tlid -> TLIDDict.get ~tlid m.userFunctions)
+    |> Option.pair (m.currentUserFn.dragging)
+    |> Option.map ~f:(fun (dragging, fn) ->
+      let oldPos, _ = dragging in
+      UserFunctions.moveParams fn oldPos newPos
+    )
+    |> Option.withDefault ~default:NoChange
 
 
 let rec filter_read_only (m : model) (modification : modification) =

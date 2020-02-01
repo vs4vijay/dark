@@ -127,10 +127,6 @@ and size =
 
 and box = pos * size
 
-and direction =
-  | GoUp
-  | GoDown
-
 (* ---------------------- *)
 (* Types *)
 (* ---------------------- *)
@@ -503,6 +499,16 @@ and mouseEvent =
   ; detail : int }
 
 and isLeftButton = bool
+
+(* UF params & drop *)
+and direction =
+  | GoUp
+  | GoDown
+
+and ufDnD =
+  { dragging: (int * id) option;
+    dragOver: int option
+  }
 
 (* ----------------------------- *)
 (* CursorState *)
@@ -1091,6 +1097,7 @@ and modification =
   | TLMenuUpdate of tlid * menuMsg
   | MoveFnParam of target * direction
   | UpdateFnCallArgs of tlid * fnName * int * int
+  | CleanUpFnP
 
 (* ------------------- *)
 (* Msgs *)
@@ -1248,7 +1255,12 @@ and msg =
   | UpdateWorkerScheduleCallback of (string StrDict.t, httpError) Tea.Result.t
       [@printer opaque "UpdateWorkerScheduleCallback"]
   | NewTabFromTLMenu of string * tlid
+  (* Move to its own compo *)
   | DragFnParam of tlid * int * int
+  | UFPDragStart of int * id
+  | UFPDragEnter of int
+  | UFPDragLeave
+  | UFPDropOn of int
 
 (* ----------------------------- *)
 (* AB tests *)
@@ -1566,7 +1578,8 @@ and model =
   ; editorSettings : editorSettings
   ; teaDebuggerEnabled : bool
   ; unsupportedBrowser : bool
-  ; tlMenus : menuState TLIDDict.t }
+  ; tlMenus : menuState TLIDDict.t
+  ; currentUserFn: ufDnD }
 
 and savedSettings =
   { editorSettings : editorSettings
