@@ -4,7 +4,7 @@ open Prelude
 module B = BlankOr
 module TL = Toplevel
 
-type viewState = ViewUtils.viewState
+type viewState = ViewState.viewState
 
 type domEventList = ViewUtils.domEventList
 

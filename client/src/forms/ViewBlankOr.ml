@@ -33,7 +33,7 @@ let viewParamName (name : string) : msg Html.html =
 (* Create a Html.div for this ID, incorporating all ID-related data, *)
 (* such as whether it's selected, appropriate events, mouseover, etc. *)
 let div
-    (vs : ViewUtils.viewState)
+    (vs : ViewState.viewState)
     (configs : htmlConfig list)
     (content : msg Html.html list) : msg Html.html =
   let getFirst fn = configs |> List.filterMap ~f:fn |> List.head in
@@ -131,17 +131,17 @@ let div
     (leftSideHtml @ content)
 
 
-let text (vs : ViewUtils.viewState) (c : htmlConfig list) (str : string) :
+let text (vs : ViewState.viewState) (c : htmlConfig list) (str : string) :
     msg Html.html =
   div vs c [Html.text str]
 
 
-let tipe (vs : ViewUtils.viewState) (c : htmlConfig list) (t : tipe) :
+let tipe (vs : ViewState.viewState) (c : htmlConfig list) (t : tipe) :
     msg Html.html =
   text vs c (Runtime.tipe2str t)
 
 
-let placeHolderFor (vs : ViewUtils.viewState) (pt : blankOrType) : string =
+let placeHolderFor (vs : ViewState.viewState) (pt : blankOrType) : string =
   match pt with
   | EventName ->
     ( match
@@ -186,9 +186,9 @@ let placeHolderFor (vs : ViewUtils.viewState) (pt : blankOrType) : string =
 
 
 let viewBlankOr
-    (htmlFn : ViewUtils.viewState -> htmlConfig list -> 'a -> msg Html.html)
+    (htmlFn : ViewState.viewState -> htmlConfig list -> 'a -> msg Html.html)
     (pt : blankOrType)
-    (vs : ViewUtils.viewState)
+    (vs : ViewState.viewState)
     (c : htmlConfig list)
     (bo : 'a blankOr) : msg Html.html =
   let wID id = [WithID id] in
@@ -226,7 +226,7 @@ let viewBlankOr
 
 let viewText
     (pt : blankOrType)
-    (vs : ViewUtils.viewState)
+    (vs : ViewState.viewState)
     (c : htmlConfig list)
     (str : string blankOr) : msg Html.html =
   viewBlankOr text pt vs c str
@@ -234,7 +234,7 @@ let viewText
 
 let viewTipe
     (pt : blankOrType)
-    (vs : ViewUtils.viewState)
+    (vs : ViewState.viewState)
     (c : htmlConfig list)
     (str : tipe blankOr) : msg Html.html =
   viewBlankOr tipe pt vs c str

@@ -15,7 +15,7 @@ let viewTL_ (m : model) (tl : toplevel) : msg Html.html =
     |> Option.map ~f:FluidPrinter.toTokens
     |> Option.withDefault ~default:[]
   in
-  let vs = ViewUtils.createVS m tl tokens in
+  let vs = ViewState.createVS m tl tokens in
   let dragEvents =
     [ ViewUtils.eventNoPropagation
         ~key:("tlmd-" ^ showTLID tlid)

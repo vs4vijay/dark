@@ -6,7 +6,7 @@ module Svg = Tea.Svg
 (* Dark *)
 module B = BlankOr
 
-type viewState = ViewUtils.viewState
+type viewState = ViewState.viewState
 
 type domEventList = ViewUtils.domEventList
 

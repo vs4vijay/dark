@@ -4,7 +4,7 @@ open Prelude
 module B = BlankOr
 module TL = Toplevel
 
-let pauseWorkerButton (vs : ViewUtils.viewState) (name : string) : msg Html.html
+let pauseWorkerButton (vs : ViewState.viewState) (name : string) : msg Html.html
     =
   let strTLID = showTLID vs.tlid in
   let schedule =
@@ -113,7 +113,7 @@ let viewTrace
   Html.li props (dotHtml @ [viewData])
 
 
-let viewTraces (vs : ViewUtils.viewState) (astID : id) : msg Html.html list =
+let viewTraces (vs : ViewState.viewState) (astID : id) : msg Html.html list =
   let traceToHtml ((traceID, traceData) : trace) =
     let value =
       Option.map ~f:(fun td -> td.input) (traceData |> Result.to_option)
@@ -148,7 +148,7 @@ let viewTraces (vs : ViewUtils.viewState) (astID : id) : msg Html.html list =
   List.map ~f:traceToHtml vs.traces
 
 
-let viewData (vs : ViewUtils.viewState) (ast : FluidExpression.t) :
+let viewData (vs : ViewState.viewState) (ast : FluidExpression.t) :
     msg Html.html list =
   let astID = FluidExpression.toID ast in
   let requestEls = viewTraces vs astID in

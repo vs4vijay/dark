@@ -15,7 +15,7 @@ module Util = FluidUtil
 
 (* Tea *)
 
-type viewState = ViewUtils.viewState
+type viewState = ViewState.viewState
 
 type ast = E.t
 
@@ -148,7 +148,7 @@ let fnArgExprs (token : token) (ast : ast) : E.t list =
 
 
 let viewPlayIcon
-    ~(vs : ViewUtils.viewState) ~state (ast : ast) (ti : T.tokenInfo) :
+    ~(vs : ViewState.viewState) ~state (ast : ast) (ti : T.tokenInfo) :
     Types.msg Html.html =
   match fnForToken state ti.token with
   | Some fn when not fn.fnPreviewExecutionSafe ->
@@ -167,7 +167,7 @@ let viewPlayIcon
       Vdom.noNode
 
 
-let toHtml ~(vs : ViewUtils.viewState) ~tlid ~state (ast : ast) :
+let toHtml ~(vs : ViewState.viewState) ~tlid ~state (ast : ast) :
     Types.msg Html.html list =
   (* Gets the source of a DIncomplete given an expr id *)
   let sourceOfExprValue id =
@@ -390,7 +390,7 @@ let viewLiveValue
   |> Option.withDefault ~default:Vdom.noNode
 
 
-let viewReturnValue (vs : ViewUtils.viewState) (ast : ast) : Types.msg Html.html
+let viewReturnValue (vs : ViewState.viewState) (ast : ast) : Types.msg Html.html
     =
   if tlidOf vs.cursorState = Some vs.tlid
   then
@@ -412,8 +412,8 @@ let viewReturnValue (vs : ViewUtils.viewState) (ast : ast) : Types.msg Html.html
   else Vdom.noNode
 
 
-let viewAST ~(vs : ViewUtils.viewState) (ast : ast) : Types.msg Html.html list =
-  let ({analysisStore; tlid; _} : ViewUtils.viewState) = vs in
+let viewAST ~(vs : ViewState.viewState) (ast : ast) : Types.msg Html.html list =
+  let ({analysisStore; tlid; _} : ViewState.viewState) = vs in
   let state = vs.fluidState in
   let tokenInfos = vs.tokens in
   let errorRail =

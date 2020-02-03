@@ -23,7 +23,7 @@ module Printer = FluidPrinter
 module Util = FluidUtil
 module Clipboard = FluidClipboard
 
-type viewState = ViewUtils.viewState
+type viewState = ViewState.viewState
 
 (* -------------------- *)
 (* Utils *)

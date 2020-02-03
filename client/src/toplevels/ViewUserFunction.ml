@@ -3,7 +3,7 @@ open Prelude
 (* Dark *)
 module B = BlankOr
 
-type viewState = ViewUtils.viewState
+type viewState = ViewState.viewState
 
 type htmlConfig = ViewBlankOr.htmlConfig
 

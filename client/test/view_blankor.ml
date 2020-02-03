@@ -18,7 +18,7 @@ let run () =
                   ; ufmInfix = false } }
           in
           let tl = tlFunc in
-          let vs : ViewUtils.viewState =
+          let vs : ViewState.viewState =
             { tl
             ; cursorState = Deselected
             ; fluidState = Defaults.defaultFluidState

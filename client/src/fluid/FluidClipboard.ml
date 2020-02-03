@@ -14,7 +14,7 @@ module E = FluidExpression
 module Util = FluidUtil
 module Printer = FluidPrinter
 
-type viewState = ViewUtils.viewState
+type viewState = ViewState.viewState
 
 type ast = E.t
 

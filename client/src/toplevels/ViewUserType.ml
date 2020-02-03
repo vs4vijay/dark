@@ -5,7 +5,7 @@ module B = BlankOr
 
 let fontAwesome = ViewUtils.fontAwesome
 
-type viewState = ViewUtils.viewState
+type viewState = ViewState.viewState
 
 type htmlConfig = ViewBlankOr.htmlConfig
 
