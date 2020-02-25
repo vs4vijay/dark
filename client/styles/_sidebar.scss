@@ -417,13 +417,27 @@ $prodColor: black;
     }
   }
 
-  .simple-item.unused {
+  .simple-item.unused, .simple-item.unused .name a {
     color: $disallowColor;
   }
 
-  .simple-item.selected::before {
+  .simple-item .name a:hover:before, .simple-item.selected .name a:before {
+    color: $hoverColor;
+    padding-right: 4px;
+    padding-bottom: 2px;
+  }
+
+  .simple-item .name a:hover:before
+  {
+    content: "\25EF";
+  }
+
+  .simple-item.selected .name a:before {
     content: "\25CF";
-    color: $yellow;
+  }
+
+  .simple-item.selected .name a:hover:before {
+    content: "\25EF";
   }
 
   .simple-item.handler {
