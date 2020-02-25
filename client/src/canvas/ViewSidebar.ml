@@ -389,14 +389,7 @@ let entry2html ~hovering (m : model) (e : entry) : msg Html.html =
       [Html.class' "name"]
       ( match e.destination with
       | Some dest ->
-          let cl =
-            if tlidOf m.cursorState = tlidOfIdentifier e.identifier
-            then "default-link selected-entry"
-            else if e.uses = Some 0
-            then "default-link unused"
-            else "default-link"
-          in
-          [destinationLink dest cl name]
+          [destinationLink dest "" name]
       | _ ->
           [Html.text name] )
   in
@@ -435,7 +428,7 @@ let entry2html ~hovering (m : model) (e : entry) : msg Html.html =
     match e.plusButton with
     | Some msg ->
         if m.permission = Some ReadWrite
-        then [buttonLink ~key:(e.name ^ "-plus") (fontAwesome "plus") msg]
+        then [buttonLink ~key:(e.name ^ "-plus") (fontAwesome "plus-circle") msg]
         else []
     | None ->
         iconspacer
@@ -447,7 +440,7 @@ let entry2html ~hovering (m : model) (e : entry) : msg Html.html =
   in
   let selected = tlidOfIdentifier e.identifier = tlidOf m.cursorState in
   Html.div
-    [Html.classList [("simple-item handler", true); ("selected", selected)]]
+    [Html.classList [("simple-item handler", true); ("selected", selected); ("unused", e.uses = Some 0)]]
     [minuslink; mainlink; auxViews]
 
 
@@ -589,9 +582,10 @@ let closedCategory2html (m : model) (c : category) : msg Html.html =
   in
   let hoverView =
     let entries = List.map ~f:(item2html ~hovering:true m) c.entries in
+    let title = Html.p [Html.class' "title"] [Html.text c.name] in
     if c.count = 0
-    then [Html.div [Html.class' "hover"] [Html.text "Empty"]]
-    else [Html.div [Html.class' "hover"] entries]
+    then [Html.div [Html.class' "hover"] [title ; Html.text "Empty"]]
+    else [Html.div [Html.class' "hover"] (title :: entries)]
   in
   (* Make the sidebar icons go back to the architectural view:
    https://trello.com/c/ajQDbUR2/1490-make-clicking-on-any-structural-sidebar-button-go-back-to-architectural-view-dbs-http-cron-workers-10-10 *)

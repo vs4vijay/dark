@@ -1,8 +1,12 @@
 $sidebarClosedWidth: 3.5em;
 $sidebarFullWidth: 20em;
-$yellowFilter: invert(0.08) sepia(1) saturate(4) hue-rotate(316.8deg) brightness(0.96);
-$greyFilter: invert(0.06) sepia(0) saturate(1) hue-rotate(0deg) brightness(0.7);
+$offwhiteFilter: brightness(0.6);
 $sidebard-preview-shadow: 2px 2px 2px 0 $black1;
+
+$hoverColor: lighten($yellow, 10%);
+$disallowColor: $grey1;
+
+$sectionSpace: 20px;
 
 $devColor: $blue;
 $prodcloneColor: $magenta;
@@ -16,6 +20,16 @@ $prodColor: black;
   left: 0;
 }
 
+// Reusabalbe Styles
+
+.section-title {
+  color: $grey3;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 0.2em;
+  margin-top: 0;
+}
+
 .viewing-table {
   $toggleSpace: 60px;
   background-color: darken($canvas-background, 10%);
@@ -23,7 +37,7 @@ $prodColor: black;
   position: relative;
   width: $sidebarFullWidth;
   box-sizing: border-box;
-  padding: 5px 0px;
+  padding: 5px 5px;
 
   &::-webkit-scrollbar {
     width: 0px; /* Remove scrollbar space */
@@ -32,6 +46,9 @@ $prodColor: black;
   &.isClosed {
     width: $sidebarClosedWidth;
     min-width: initial;
+    padding-right: 0;
+    padding-left: 0;
+
     .toggle-container {
       justify-content: center;
       padding-right: 0px;
@@ -41,6 +58,26 @@ $prodColor: black;
       p {
         display: none;
       }
+
+      &:hover {
+        padding-left: 4px;
+        animation-duration: 0.2s;
+        animation-name: bounceRight;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+        animation-timing-function: ease-in-out;
+      }
+    }
+  }
+
+  a {
+    text-decoration: none;
+
+    &:link,
+    &:visited,
+    &:hover,
+    &:active {
+      color: $link-color;
     }
   }
 
@@ -94,8 +131,7 @@ $prodColor: black;
         display: none;
       }
 
-      &:hover {
-        .hover {
+      &:hover.hover {
           display: flex;
           flex-direction: column;
 
@@ -119,7 +155,6 @@ $prodColor: black;
           .GET a.external {
             font-size: 12px;
           }
-        }
       }
 
       .hover {
@@ -172,48 +207,27 @@ $prodColor: black;
           position: absolute;
           color: $white1;
           font-size: 15px;
-          left: 10;
-          right: 0;
-          padding-right: 2px;
+          right: 4px;
           &:hover {
             cursor: pointer;
-            color: lighten($yellow, 10%);
+            color: $hoverColor;
           }
         }
 
         .header-icon {
           display: flex;
           position: relative;
+          transform: scale(0.6);
+          transition: 0.2s transform;
+
           cursor: pointer;
           object {
             pointer-events: none;
           }
           &:hover {
-            &:before {
-              content: attr(alt);
-              font-size: 0.55rem;
-              text-align: center;
-
-              background-color: $black2;
-              color: lighten($yellow, 10%);
-              // color: $white2;
-
-              width: 100%;
-              padding: 2px;
-              z-index: 60;
-
-              position: absolute;
-              top: -4px;
-              left: 0;
-            }
-
-            object,
-            i.fa {
-              filter: $yellowFilter;
-              cursor: pointer;
-            }
+            transform: scale(1.0);
           }
-
+          
           &.empty object,
           &.empty i.fa {
             filter: none;
@@ -223,8 +237,10 @@ $prodColor: black;
               filter: none;
             }
           }
+          
 
           i.fa {
+            // So we can apply the same filter as svg assets
             color: white;
             font-size: 2.16em;
           }
@@ -233,7 +249,7 @@ $prodColor: black;
           i.fa {
             width: 100%;
             height: 100%;
-            filter: $greyFilter;
+            filter: $offwhiteFilter;
           }
         }
 
@@ -272,12 +288,21 @@ $prodColor: black;
           background-color: darken($canvas-background, 10%);
           box-shadow: $sidebard-preview-shadow;
 
+          .title {
+            @extend .section-title;
+            text-align: center;
+          }
+
           .header-icon {
             display: none;
           }
 
           .GET a.external {
             font-size: 12px;
+          }
+
+          .simple-item.selected::before {
+            margin-right: 5px;
           }
 
           &.admin-state {
@@ -375,6 +400,13 @@ $prodColor: black;
 
     &:hover {
       color: $white1;
+      padding-right: 4px;
+
+      animation-duration: 0.4s;
+      animation-name: bounceLeft;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+      animation-timing-function: ease-in-out;
     }
 
     p {
@@ -384,12 +416,22 @@ $prodColor: black;
       display: none;
     }
   }
+
+  .simple-item.unused {
+    color: $disallowColor;
+  }
+
+  .simple-item.selected::before {
+    content: "\25CF";
+    color: $yellow;
+  }
+
   .simple-item.handler {
     display: flex;
     width: 100%;
     margin: 5px 0px;
     .name {
-      color: $white3;
+      color: $white1;
       width: 70%;
       display: block;
       text-overflow: ellipsis;
@@ -402,9 +444,9 @@ $prodColor: black;
       align-items: center;
       justify-content: center;
       .button-link {
-        color: $grey2;
+        color: $white1;
         &:hover {
-          color: $grey3;
+          color: $hoverColor;
         }
       }
     }
@@ -451,6 +493,7 @@ $prodColor: black;
 
   .sidebar-section {
     margin: 5px;
+    margin-top: $sectionSpace;
     width: calc(#{"100% - 5px"});
     &:first-child {
       margin-top: 0px;
@@ -466,7 +509,11 @@ $prodColor: black;
       }
       &::-webkit-details-marker {
         margin: 2px;
-        color: lighten($yellow, 10%);
+        color: $white2;
+
+        &:hover {
+          color: $hoverColor;
+        }
       }
       .header {
         padding: 2px 5px;
@@ -474,31 +521,38 @@ $prodColor: black;
         align-items: center;
         flex-direction: row;
         justify-content: space-between;
-        color: lighten($yellow, 10%);
+        color: $grey3;
         width: 100%;
 
         .title {
           width: calc(#{"100% - 32px"});
           display: flex;
-          .count {
-            font-weight: bold;
-          }
+
+          @extend .section-title;
         }
 
         .verb-link,
         .button-link {
           float: right;
           color: $grey3;
+
+          &:hover {
+            color: $hoverColor;
+          }
         }
 
         .header-icon {
           height: 20px;
           width: 20px;
           margin-right: 5px;
-          filter: $yellowFilter;
 
           i.fa {
             color: white;
+            // So we can apply the same filter as svg assets
+          }
+
+          i.fa, object {
+            filter: $offwhiteFilter;
           }
         }
       }
@@ -522,8 +576,6 @@ $prodColor: black;
 
     .button-link,
     .external {
-      @extend .default-link;
-
       display: inline-block;
       width: 16px;
       margin: 0 2px;
@@ -558,25 +610,13 @@ $prodColor: black;
       }
 
       &:hover {
-        color: $yellow;
+        text-decoration: underline;
       }
     }
 
     .external {
       font-size: 12px;
     }
-  }
-
-  .default-link.unused {
-    color: $grey2;
-  }
-
-  .default-link.selected-entry {
-    color: $blue;
-  }
-
-  .default-link.selected-entry:hover {
-    color: saturate($blue, 30%);
   }
 }
 
@@ -619,7 +659,7 @@ $prodColor: black;
       color: $grey3;
 
       &:hover {
-        color: $yellow;
+        text-decoration: underline;
       }
     }
 
