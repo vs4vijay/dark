@@ -164,11 +164,7 @@ let dbCategory (m : model) (dbs : db list) : category =
           | F (_, name) ->
               Refactor.dbUseCount m name
         in
-        let minusButton =
-          if (not (DB.isLocked m db.dbTLID)) && uses = 0
-          then Some (ToplevelDelete db.dbTLID)
-          else None
-        in
+        let minusButton = None in
         Entry
           { name = B.valueWithDefault "Untitled DB" db.dbName
           ; identifier = Tlid db.dbTLID
@@ -216,11 +212,7 @@ let userFunctionCategory (m : model) (ufs : userFunction list) : category =
         Option.map (B.toOption fn.ufMetadata.ufmName) ~f:(fun name ->
             let tlid = fn.ufTLID in
             let usedIn = Introspect.allUsedIn tlid m in
-            let minusButton =
-              if UserFunctions.canDelete usedIn tlid
-              then Some (DeleteUserFunction tlid)
-              else None
-            in
+            let minusButton = None in
             Entry
               { name
               ; identifier = Tlid tlid

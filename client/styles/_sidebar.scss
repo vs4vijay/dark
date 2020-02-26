@@ -6,6 +6,8 @@ $sidebard-preview-shadow: 2px 2px 2px 0 $black1;
 $hoverColor: lighten($yellow, 10%);
 $disallowColor: $grey1;
 
+$secondaryButtonColor: $grey2;
+
 $sectionSpace: 20px;
 
 $devColor: $blue;
@@ -37,7 +39,8 @@ $prodColor: black;
   position: relative;
   width: $sidebarFullWidth;
   box-sizing: border-box;
-  padding: 5px 5px;
+  padding: 5px;
+  padding-right: 0;
 
   &::-webkit-scrollbar {
     width: 0px; /* Remove scrollbar space */
@@ -131,7 +134,7 @@ $prodColor: black;
         display: none;
       }
 
-      &:hover.hover {
+      &:hover .hover {
           display: flex;
           flex-direction: column;
 
@@ -141,6 +144,7 @@ $prodColor: black;
           width: 300px;
           max-height: 400px;
           padding: 10px;
+          padding-left: 15px;
           margin-top: 10px;
 
           overflow-y: scroll;
@@ -270,8 +274,7 @@ $prodColor: black;
         }
       }
 
-      &:hover {
-        .hover {
+      &:hover .hover {
           display: flex;
           flex-direction: column;
 
@@ -371,7 +374,6 @@ $prodColor: black;
               }
             }
           }
-        }
       }
       .hover {
         display: none;
@@ -385,7 +387,7 @@ $prodColor: black;
     align-items: center;
     justify-content: flex-end;
     margin-bottom: 5px;
-    color: $grey2;
+    color: $secondaryButtonColor;
     cursor: pointer;
     padding-right: 5px;
     .toggle-button {
@@ -458,7 +460,7 @@ $prodColor: black;
       align-items: center;
       justify-content: center;
       .button-link {
-        color: $white1;
+        color: $secondaryButtonColor;
         &:hover {
           color: $hoverColor;
         }
@@ -582,6 +584,7 @@ $prodColor: black;
     }
     &.deleted > .sidebar-section {
       margin-left: 10px;
+      width: calc(100% - 16px);
     }
 
     &.deleted.empty div {
@@ -631,6 +634,19 @@ $prodColor: black;
     .external {
       font-size: 12px;
     }
+  }
+
+  .sidebar-section.fof > .simple-item .aux a.button-link,
+  .sidebar-section.deleted > .sidebar-section .simple-item a.button-link {
+      color: $secondaryButtonColor;
+
+      &:hover {
+        color: $hoverColor;
+      }
+  }
+  
+  .sidebar-section.fof[open] {
+    width: calc(100% - 10px);
   }
 }
 
