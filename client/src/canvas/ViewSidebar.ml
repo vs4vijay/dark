@@ -402,19 +402,19 @@ let entry2html ~hovering (m : model) (e : entry) : msg Html.html =
     if hovering
     then Vdom.noNode
     else
-      Html.div
-        [Html.class' "delete"]
-        ( match e.minusButton with
-        | Some msg ->
-            if m.permission = Some ReadWrite
-            then
-              [ buttonLink
-                  ~key:(entryKeyFromIdentifier e.identifier)
-                  (fontAwesome "times-circle")
-                  msg ]
-            else []
-        | None ->
-            iconspacer )
+      match e.minusButton with
+      | Some msg ->
+          if m.permission = Some ReadWrite
+          then
+          Html.div
+            [Html.class' "delete"]
+            [ buttonLink
+                ~key:(entryKeyFromIdentifier e.identifier)
+                (fontAwesome "times-circle")
+                msg ]
+          else Vdom.noNode
+      | None ->
+        Vdom.noNode
   in
   let pluslink =
     match e.plusButton with
