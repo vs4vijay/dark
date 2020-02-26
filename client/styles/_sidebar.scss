@@ -6,7 +6,8 @@ $sidebard-preview-shadow: 2px 2px 2px 0 $black1;
 $hoverColor: lighten($yellow, 10%);
 $disallowColor: $grey1;
 
-$secondaryButtonColor: $grey2;
+$primaryBtnColor: $white1;
+$secondaryBtnColor: $grey2;
 
 $sectionSpace: 20px;
 
@@ -54,7 +55,9 @@ $prodColor: black;
 
     .toggle-container {
       justify-content: center;
-      padding-right: 0px;
+      padding-right: 0;
+      margin-right: 0;
+
       &:last-child {
         display: flex;
       }
@@ -138,37 +141,6 @@ $prodColor: black;
         display: none;
       }
 
-      &:hover .hover {
-          display: flex;
-          flex-direction: column;
-
-          position: absolute;
-          left: $sidebarClosedWidth;
-
-          width: 300px;
-          max-height: 400px;
-          padding: 10px;
-          padding-left: 15px;
-          margin-top: 10px;
-
-          overflow-y: scroll;
-
-          background-color: darken($canvas-background, 10%);
-          box-shadow: $sidebard-preview-shadow;
-
-          .header-icon {
-            display: none;
-          }
-
-          .GET a.external {
-            font-size: 12px;
-          }
-      }
-
-      .hover {
-        display: none;
-      }
-
       &.settings {
         margin-top: 0;
       }
@@ -213,7 +185,7 @@ $prodColor: black;
           justify-content: flex-end;
           align-self: flex-end;
           position: absolute;
-          color: $white1;
+          color: $primaryBtnColor;
           font-size: 15px;
           right: 4px;
           &:hover {
@@ -391,8 +363,9 @@ $prodColor: black;
     align-items: center;
     justify-content: flex-end;
     margin-bottom: 5px;
-    color: $secondaryButtonColor;
+    color: $secondaryBtnColor;
     cursor: pointer;
+    margin-right: 10px;
     padding-right: 5px;
     .toggle-button {
       display: flex;
@@ -430,7 +403,7 @@ $prodColor: black;
   .simple-item .name a:before {
     content:"\25EF";
     padding-right: 4px;
-    padding-bottom: 2px;
+    padding-bottom: 4px;
     color: transparent;
   }
 
@@ -470,7 +443,7 @@ $prodColor: black;
       align-items: center;
       justify-content: center;
       .button-link {
-        color: $secondaryButtonColor;
+        color: $secondaryBtnColor;
         &:hover {
           color: $hoverColor;
         }
@@ -520,7 +493,7 @@ $prodColor: black;
   .sidebar-section {
     margin: 5px;
     margin-top: $sectionSpace;
-    width: calc(#{"100% - 1.0em"});
+    width: calc(100% - 10px);
     &:first-child {
       margin-top: 0px;
     }
@@ -560,7 +533,8 @@ $prodColor: black;
         .verb-link,
         .button-link {
           float: right;
-          color: $grey3;
+          color: $primaryBtnColor;
+          font-size: 1.2em;
 
           &:hover {
             color: $hoverColor;
@@ -607,15 +581,15 @@ $prodColor: black;
       width: 16px;
       margin: 0 2px;
       cursor: pointer;
-      color: $grey3;
+      color: $sectionSpace;
 
       &:link,
       &:visited {
-        color: $grey3;
+        color: $secondaryBtnColor;
       }
 
       &:hover {
-        color: $yellow;
+        color: $hoverColor;
       }
     }
   }
@@ -648,7 +622,7 @@ $prodColor: black;
 
   .sidebar-section.fof > .simple-item .aux a.button-link,
   .sidebar-section.deleted > .sidebar-section .simple-item a.button-link {
-      color: $secondaryButtonColor;
+      color: $secondaryBtnColor;
 
       &:hover {
         color: $hoverColor;
