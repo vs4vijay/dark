@@ -639,9 +639,14 @@ $prodColor: black;
     }
   }
 
+  .sidebar-section.fof > .simple-item .name,
+  .sidebar-section.deleted > .sidebar-section .simple-item .name {
+    color: $secondaryBtnColor;
+  }
+
   .sidebar-section.fof > .simple-item .aux a.button-link,
-  .sidebar-section.deleted > .sidebar-section .simple-item a.button-link {
-      color: $secondaryBtnColor;
+  .sidebar-section.deleted > .sidebar-section .simple-item .aux a.button-link {
+      color: $primaryBtnColor;
 
       &:hover {
         color: $hoverColor;
@@ -649,7 +654,7 @@ $prodColor: black;
   }
 
   .sidebar-section.fof .simple-item.handler {
-    margin-left: 1.0em;
+    margin-left: 10px;
   }
 
   .sidebar-section.deleted .simple-item.handler {
@@ -657,7 +662,7 @@ $prodColor: black;
   }
   
   .sidebar-section.fof[open] {
-    width: calc(100% - 24px);
+    width: calc(100% - 18px);
   }
 }
 
