@@ -70,7 +70,7 @@ module TestCase = struct
     { ast : FluidAST.t
     ; originalExpr : FluidExpression.t
     ; state : fluidState
-    ; editor : int option
+    ; inEditor : bool
     ; wrap : bool
     ; clone : bool
     ; debug : bool }
@@ -81,7 +81,7 @@ module TestCase = struct
       ?(debug = false)
       ?(pos = 0)
       ?(sel = None)
-      ?(editor = None)
+      ?(inEditor = false)
       (originalExpr : FluidExpression.t) : t =
     let selectionStart, pos =
       match sel with None -> (None, pos) | Some (a, b) -> (Some a, b)
@@ -96,11 +96,9 @@ module TestCase = struct
       FluidAST.ofExpr fullExpr
     in
     let state =
-      let extraEditors = Fluid.buildFeatureFlagEditors ast in
+      let extraEditors = FluidEditor.build ast in
       let activeEditorId =
-        editor
-        |> Option.andThen ~f:(fun index -> List.getAt ~index extraEditors)
-        |> Option.map ~f:(fun (e : FluidEditor.t) -> e.id)
+        if inEditor then List.head (StrDict.keys extraEditors) else None
       in
       (* re-calculate selectionStart, pos taking into account either
        * None -> the if/else wrapper because we are testing the main editor
@@ -143,7 +141,7 @@ module TestCase = struct
       ; oldPos = pos
       ; newPos = pos }
     in
-    {originalExpr; editor; ast; state; wrap; clone; debug}
+    {originalExpr; inEditor; ast; state; wrap; clone; debug}
 end
 
 module TestResult = struct
@@ -193,7 +191,7 @@ module TestResult = struct
 
 
   let pos (t : t) : int =
-    if Option.isSome t.testcase.editor
+    if t.testcase.inEditor
     then t.resultState.newPos - magicFeatureFlagTokenizationPrefix
     else if t.testcase.wrap
     then removeWrapperFromCaretPos t t.resultState.newPos
@@ -251,7 +249,7 @@ let process (inputs : fluidInputEvent list) (tc : TestCase.t) : TestResult.t =
   in
   let resultAST =
     FluidAST.map processedAST ~f:(function
-        | EFeatureFlag (_, _, _, _, expr) when Option.isSome tc.editor ->
+        | EFeatureFlag (_, _, _, _, expr) when tc.inEditor ->
             expr
         | EIf (_, _, expr, _) when tc.wrap ->
             expr
@@ -364,7 +362,7 @@ let tflag
     (fn : TestCase.t -> TestResult.t)
     (expectedStr : string) =
   let expr = flagNew expr in
-  let case = TestCase.init ~wrap:false ~pos ~sel ~debug ~editor:(Some 0) expr in
+  let case = TestCase.init ~wrap:false ~pos ~sel ~debug ~inEditor:true expr in
   test
     ( name
     ^ " in FF - `"
@@ -4690,7 +4688,7 @@ let run () =
         shiftTab
         "let *** = ~___\n5" ;
       t
-        "shift tab goes to last blank in editor"
+        "shift tab goes to last blank in main editor"
         ~wrap:false
         nonEmptyLetWithBlankEnd
         ~pos:4

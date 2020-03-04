@@ -38,7 +38,7 @@ let deselectFluidEditor (s : fluidState) : fluidState =
   ; newPos = 0
   ; upDownCol = None
   ; activeEditorId = None
-  ; extraEditors = [] }
+  ; extraEditors = StrDict.empty }
 
 
 let getStringIndexMaybe ti pos : int option =
@@ -113,8 +113,7 @@ let rec getTokensAtPosition
 
 let focusedEditor (s : fluidState) : FluidEditor.t option =
   s.activeEditorId
-  |> Option.andThen ~f:(fun eid ->
-         List.find s.extraEditors ~f:(fun (e : FluidEditor.t) -> e.id = eid))
+  |> Option.andThen ~f:(fun eid -> StrDict.get s.extraEditors ~key:eid)
 
 
 let exprOfFocusedEditor (ast : FluidAST.t) (s : fluidState) : FluidExpression.t
@@ -5223,14 +5222,6 @@ let getCopySelection (m : model) : clipboardContents =
   |> Option.withDefault ~default:("", None)
 
 
-let buildFeatureFlagEditors (ast : FluidAST.t) : FluidEditor.t list =
-  FluidAST.filter ast ~f:(function EFeatureFlag _ -> true | _ -> false)
-  |> List.map ~f:(fun e ->
-         { FluidEditor.id = "flag-" ^ (e |> E.toID |> ID.toString)
-         ; expressionId = E.toID e
-         ; kind = FeatureFlagView })
-
-
 let updateMouseUp (m : model) (ast : FluidAST.t) (eventData : fluidMouseUp) :
     FluidAST.t * fluidState =
   let s =
@@ -5257,7 +5248,7 @@ let updateMouseUp (m : model) (ast : FluidAST.t) (eventData : fluidMouseUp) :
         (ast, {s with selectionStart = None} |> acClear)
   in
   if List.member m.tests ~value:FeatureFlagVariant
-  then (ast, {s with extraEditors = buildFeatureFlagEditors ast})
+  then (ast, {s with extraEditors = FluidEditor.build ast})
   else (ast, s)
 
 
