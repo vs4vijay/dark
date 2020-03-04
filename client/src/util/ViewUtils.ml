@@ -71,7 +71,7 @@ let createVS (m : model) (tl : toplevel) : viewState =
     ; tokens = FluidPrinter.tokenizeForViewKind MainView expr }
   in
   let extraEditors =
-    List.filterMap m.fluidState.extraEditors ~f:(fun e ->
+    List.filterMap m.fluidState.extraEditors ~f:(fun (e : FluidEditor.t) ->
         let expr =
           ast
           |> FluidAST.find e.expressionId

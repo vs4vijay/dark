@@ -531,7 +531,7 @@ let tokenizeWithFFTokenization
 
 let tokenize = tokenizeWithFFTokenization FeatureFlagOnlyDisabled
 
-let tokenizeForViewKind (k : editorViewKind) (expr : FluidExpression.t) :
+let tokenizeForViewKind (k : FluidEditor.viewKind) (expr : FluidExpression.t) :
     FluidToken.tokenInfo list =
   match k with
   | MainView ->
@@ -551,8 +551,8 @@ let eToTestString (e : E.t) : string =
   |> String.join ~sep:""
 
 
-let testStringForViewKind (k : editorViewKind) (expr : FluidExpression.t) :
-    string =
+let testStringForViewKind (k : FluidEditor.viewKind) (expr : FluidExpression.t)
+    : string =
   let ff =
     match k with
     | MainView ->

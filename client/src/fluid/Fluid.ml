@@ -111,10 +111,10 @@ let rec getTokensAtPosition
       else getTokensAtPosition ~prev:(Some current) ~pos remaining
 
 
-let focusedEditor (s : fluidState) : editorView option =
+let focusedEditor (s : fluidState) : FluidEditor.t option =
   s.activeEditorId
   |> Option.andThen ~f:(fun eid ->
-         List.find s.extraEditors ~f:(fun e -> e.id = eid))
+         List.find s.extraEditors ~f:(fun (e : FluidEditor.t) -> e.id = eid))
 
 
 let exprOfFocusedEditor (ast : FluidAST.t) (s : fluidState) : FluidExpression.t
@@ -124,7 +124,8 @@ let exprOfFocusedEditor (ast : FluidAST.t) (s : fluidState) : FluidExpression.t
       FluidAST.toExpr ast
   | Some _ ->
       focusedEditor s
-      |> Option.andThen ~f:(fun e -> FluidAST.find e.expressionId ast)
+      |> Option.andThen ~f:(fun (e : FluidEditor.t) ->
+             FluidAST.find e.expressionId ast)
       |> recoverOpt
            "cannot find expression for editor"
            ~default:(FluidAST.toExpr ast)
@@ -5222,10 +5223,10 @@ let getCopySelection (m : model) : clipboardContents =
   |> Option.withDefault ~default:("", None)
 
 
-let buildFeatureFlagEditors (ast : FluidAST.t) : editorView list =
+let buildFeatureFlagEditors (ast : FluidAST.t) : FluidEditor.t list =
   FluidAST.filter ast ~f:(function EFeatureFlag _ -> true | _ -> false)
   |> List.map ~f:(fun e ->
-         { id = "flag-" ^ (e |> E.toID |> ID.toString)
+         { FluidEditor.id = "flag-" ^ (e |> E.toID |> ID.toString)
          ; expressionId = E.toID e
          ; kind = FeatureFlagView })
 

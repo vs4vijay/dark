@@ -100,7 +100,7 @@ module TestCase = struct
       let activeEditorId =
         editor
         |> Option.andThen ~f:(fun index -> List.getAt ~index extraEditors)
-        |> Option.map ~f:(fun e -> e.id)
+        |> Option.map ~f:(fun (e : FluidEditor.t) -> e.id)
       in
       (* re-calculate selectionStart, pos taking into account either
        * None -> the if/else wrapper because we are testing the main editor
