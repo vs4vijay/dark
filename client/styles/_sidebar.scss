@@ -9,7 +9,7 @@ $disallowColor: $grey1;
 $primaryBtnColor: $white1;
 $secondaryBtnColor: $grey2;
 
-$sectionSpace: 20px;
+$sectionSpace: 10px;
 
 $devColor: $blue;
 $prodcloneColor: $magenta;
@@ -140,6 +140,10 @@ $prodColor: black;
       padding: 15px 5px;
       color: $grey2;
       width: 100%;
+
+      &:first-child {
+        padding-top: 0;
+      }
 
       &.deleted.empty {
         // Dont show trash can if it's empty
@@ -388,7 +392,7 @@ $prodColor: black;
     .toggle-button {
       display: flex;
       .fa {
-        font-size: 20px;
+        font-size: 1.0em;
         &:nth-child(2) {
           margin-left: -5px;
         }
@@ -446,7 +450,7 @@ $prodColor: black;
   .simple-item.handler {
     display: flex;
     width: 100%;
-    margin: 5px 0px;
+    margin: 3px 0px;
     margin-left: 2.0em;
     .name {
       color: $white1;
@@ -510,18 +514,24 @@ $prodColor: black;
   }
 
   .sidebar-section {
-    margin: 5px;
-    margin-top: $sectionSpace;
+    margin: $sectionSpace/2 5px;
+   // border-top: solid 1px $grey1;
     width: calc(100% - 10px);
+
     &:first-child {
-      margin-top: 0px;
+      margin: 0 5px;
+      margin-bottom:  $sectionSpace/2;
+      border-top: 0;
     }
+
     summary {
       outline: none;
       display: flex;
       height: 24px;
       align-items: center;
       justify-content: center;
+      margin-top: 5px;
+
       &.headerSummary {
         cursor: pointer;
       }
@@ -600,7 +610,7 @@ $prodColor: black;
       width: 16px;
       margin: 0 2px;
       cursor: pointer;
-      color: $sectionSpace;
+      color: $secondaryBtnColor;
 
       &:link,
       &:visited {
