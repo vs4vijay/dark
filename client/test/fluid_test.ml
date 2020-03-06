@@ -96,9 +96,11 @@ module TestCase = struct
       FluidAST.ofExpr fullExpr
     in
     let state =
-      let extraEditors = FluidEditor.build ast in
+      let editors = FluidEditor.State.init (TLID "7") ast in
       let activeEditorId =
-        if inEditor then List.head (StrDict.keys extraEditors) else None
+        if inEditor
+        then FluidEditor.State.map editors ~f:(fun e -> e.id) |> List.head
+        else None
       in
       (* re-calculate selectionStart, pos taking into account either
        * None -> the if/else wrapper because we are testing the main editor
@@ -137,7 +139,7 @@ module TestCase = struct
       { defaultTestState with
         activeEditorId
       ; selectionStart
-      ; extraEditors
+      ; editors
       ; oldPos = pos
       ; newPos = pos }
     in
