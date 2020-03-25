@@ -391,19 +391,13 @@ let deletedCategory (m : model) : category =
 
 let entry2html ~hovering (m : model) (e : entry) : msg Html.html =
   let name = e.name in
-  let destinationLink page classes elements =
-    Url.linkFor page classes elements
+  let selected =
+    tlidOfIdentifier e.identifier = CursorState.tlidOf m.cursorState
   in
   let linkItem =
     match e.destination with
     | Some dest ->
-      let cl =
-        if CursorState.tlidOf m.cursorState = tlidOfIdentifier e.identifier
-        then "toplevel-link selected-entry"
-        else if e.uses = Some 0
-        then "toplevel-link unused"
-        else "toplevel-link"
-      in
+      let cls = "toplevel-link" ^ (if selected then " selected" else "") in
       let verb =
         match e.verb with
         | Some v ->
@@ -411,9 +405,10 @@ let entry2html ~hovering (m : model) (e : entry) : msg Html.html =
         | _ ->
             Vdom.noNode
       in
+      let path = Html.span [Html.class' "path"] [Html.text name] in
       Html.span
         [Html.class' "toplevel-name"]
-        [destinationLink dest cl [Html.text name ; verb]]
+        [Url.linkFor dest cls [path; verb]]
     | _ ->
       Html.span
         [Html.class' "toplevel-name"]
@@ -449,11 +444,8 @@ let entry2html ~hovering (m : model) (e : entry) : msg Html.html =
     | None ->
         iconspacer
   in
-  let selected =
-    tlidOfIdentifier e.identifier = CursorState.tlidOf m.cursorState
-  in
   Html.div
-    [Html.classList [("simple-item handler", true); ("selected", selected)]]
+    [Html.classList [("simple-item", true); ("selected", selected)]]
     [minuslink; linkItem; pluslink]
 
 

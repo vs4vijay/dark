@@ -178,6 +178,26 @@ $hSpace: 5px;
       justify-content: space-between;
       color: $primaryColor;
       text-decoration: none;
+      outline: none;
+
+      .path::before {
+        @include font-awesome("\f111");
+        color: transparent;
+        font-size: 0.5em;
+        width: 20px;
+        vertical-align: middle;
+        display: inline-block;
+        text-align: center
+      }
+
+      &:hover .path::before {
+        color: $hoverColor;
+        font-weight: 500;
+      }
+
+      &.selected .path::before {
+        color: $hoverColor;
+      }
 
       .verb {
         color: $secondaryColor;
