@@ -505,7 +505,7 @@ let categoryTitle (name : string) (classname : string) : msg Html.html =
       (categoryIcon classname)
   in
   let text cl t = Html.span [Html.class' cl] [Html.text t] in
-  Html.div [Html.class' "title"] [icon; text "title" name]
+  Html.div [Html.class' "title"] [icon; text "category-name" name]
 
 
 let categoryOpenCloseHelpers (m : model) (classname : string) (count : int) :
@@ -571,17 +571,17 @@ and category2html (m : model) (c : category) : msg Html.html =
       | Some msg ->
           if m.permission = Some ReadWrite
           then
-            [ buttonLink
+            buttonLink
                 ~key:("plus-" ^ c.classname)
                 (fontAwesome "plus-circle")
-                msg ]
-          else []
+                msg
+          else Vdom.noNode
       | None ->
-          []
+          Vdom.noNode
     in
     Html.summary
-      [Html.class' "headerSummary"; openEventHandler]
-      [Html.div [Html.class' "header"] (title :: plusButton)]
+      [Html.class' "section-summary"; openEventHandler]
+      [title ; plusButton]
   in
   let entries = List.map ~f:(item2html ~hovering:false m) c.entries in
   let classes =
@@ -664,23 +664,19 @@ let toggleSidebar (isExpanded : bool) : msg Html.html =
     ViewUtils.eventNeither ~key:"toggle-sidebar" "click" (fun _ ->
         ToggleSideBar)
   in
+  let cls = if isExpanded then "expanded" else "collapsed" in
+  let description =
+    if isExpanded
+    then "Collapse sidebar"
+    else "Expand sidebar"  
+  in
   let icon =
     let view' iconName = Html.span [Html.class' "icon"] [fontAwesome iconName; fontAwesome iconName] in
     if isExpanded
     then view' "chevron-left"
     else view' "chevron-right"
   in
-  let label = 
-    if isExpanded
-    then Html.span [Html.class' "label"] [Html.text "Collapse sidebar"]
-    else Vdom.noNode
-  in
-  let description =
-    if isExpanded
-    then "Collapse sidebar"
-    else "Expand sidebar"  
-  in
-  let cls = if isExpanded then "expanded" else "collapsed" in
+  let label = Html.span [Html.class' "label"] [Html.text description] in
   Html.div
     [event; Html.class' ("toggle-btn " ^ cls); Html.title description]
     [label ; icon]

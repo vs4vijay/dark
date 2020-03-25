@@ -11,7 +11,9 @@ $hoverColor: lighten($yellow, 10%);
 $primaryColor: $white1;
 $secondaryColor: $grey2;
 
-// container segmenting out space for sidebar
+$sectionSpace: 20px;
+$hSpace: 5px;
+
 #sidebar-left {
   width: max-content;
   height: 100%;
@@ -90,6 +92,10 @@ $secondaryColor: $grey2;
     .icon .fa {
       font-size: 0.8em;
     }
+
+    .label {
+      display: none;
+    }
   }
 
   .label {
@@ -102,6 +108,51 @@ $secondaryColor: $grey2;
       font-size: 1.0em;
       &:nth-child(2) {
         margin-left: -5px;
+      }
+    }
+  }
+}
+
+.sidebar-section {
+  margin-bottom: $sectionSpace;
+  padding: 0 $hSpace;
+
+  .section-summary {
+    outline: none;
+    display:flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    &::-webkit-details-marker {
+      color: $secondaryColor;
+      &:hover {
+        color: $hoverColor;
+      }
+    }
+
+    div {
+      display: inline-block;
+    }
+
+    .title {
+      width: calc(100% - 32px);
+      .header-icon {
+        margin-right: 5px;
+      }
+    }
+
+    .category-name {
+      color: $grey3;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 0.2em;
+      margin-top: 0;
+    }
+
+    a.button-link { // (+) icon for section
+      font-size: 1.2em;
+      &:hover {
+        color: $hoverColor;
       }
     }
   }
