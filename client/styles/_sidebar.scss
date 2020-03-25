@@ -157,3 +157,47 @@ $hSpace: 5px;
     }
   }
 }
+
+.simple-item {
+  div {
+    display: inline-block;
+  }
+
+  .icon-spacer {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+  }
+
+  .toplevel-name {
+    width: calc(100% - 32px);
+    display: inline-block;
+
+    a.toplevel-link {
+      display:flex;
+      justify-content: space-between;
+      color: $primaryColor;
+      text-decoration: none;
+
+      .verb {
+        color: $secondaryColor;
+
+        &.GET {
+          color: $http-get;
+        }
+        &.POST {
+          color: $http-post;
+        }
+        &.DELETE {
+          color: $http-delete;
+        }
+        &.PUT {
+          color: $http-put;
+        }
+        &.PATCH {
+          color: $http-patch;
+        }
+      }
+    }
+  }
+}

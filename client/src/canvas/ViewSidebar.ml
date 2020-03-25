@@ -162,11 +162,7 @@ let dbCategory (m : model) (dbs : db list) : category =
           | F (_, name) ->
               Refactor.dbUseCount m name
         in
-        let minusButton =
-          if (not (DB.isLocked m db.dbTLID)) && uses = 0
-          then Some (ToplevelDelete db.dbTLID)
-          else None
-        in
+        let minusButton = None in
         Entry
           { name = B.valueWithDefault "Untitled DB" db.dbName
           ; identifier = Tlid db.dbTLID
@@ -234,11 +230,7 @@ let userFunctionCategory (m : model) (ufs : userFunction list) : category =
         Option.map (B.toOption fn.ufMetadata.ufmName) ~f:(fun name ->
             let tlid = fn.ufTLID in
             let usedIn = Introspect.allUsedIn tlid m in
-            let minusButton =
-              if UserFunctions.canDelete usedIn tlid
-              then Some (DeleteUserFunction tlid)
-              else None
-            in
+            let minusButton = None in
             Entry
               { name
               ; identifier = Tlid tlid
@@ -399,76 +391,70 @@ let deletedCategory (m : model) : category =
 
 let entry2html ~hovering (m : model) (e : entry) : msg Html.html =
   let name = e.name in
-  let destinationLink page classes name =
-    Url.linkFor page classes [Html.text name]
+  let destinationLink page classes elements =
+    Url.linkFor page classes elements
   in
-  let mainlink =
-    Html.span
-      [Html.class' "name"; Html.title name]
-      ( match e.destination with
-      | Some dest ->
-          let cl =
-            if CursorState.tlidOf m.cursorState = tlidOfIdentifier e.identifier
-            then "default-link selected-entry"
-            else if e.uses = Some 0
-            then "default-link unused"
-            else "default-link"
-          in
-          [destinationLink dest cl name]
-      | _ ->
-          [Html.text name] )
-  in
-  let verb =
-    match (e.destination, e.verb) with
-    | Some dest, Some v ->
-        [destinationLink dest "verb verb-link" v]
-    | None, Some v ->
-        [Html.span [Html.class' "verb"] [Html.text v]]
+  let linkItem =
+    match e.destination with
+    | Some dest ->
+      let cl =
+        if CursorState.tlidOf m.cursorState = tlidOfIdentifier e.identifier
+        then "toplevel-link selected-entry"
+        else if e.uses = Some 0
+        then "toplevel-link unused"
+        else "toplevel-link"
+      in
+      let verb =
+        match e.verb with
+        | Some v ->
+            Html.span [Html.class' ("verb " ^ v)] [Html.text v]
+        | _ ->
+            Vdom.noNode
+      in
+      Html.span
+        [Html.class' "toplevel-name"]
+        [destinationLink dest cl [Html.text name ; verb]]
     | _ ->
-        [Html.span [Html.class' "verb"] []]
+      Html.span
+        [Html.class' "toplevel-name"]
+        [Html.text name]
   in
-  let httpMethod = match e.verb with Some v -> v | None -> "" in
-  let iconspacer = [Html.div [Html.class' "icon-spacer"] []] in
+  let iconspacer = Html.div [Html.class' "icon-spacer"] [] in
   let minuslink =
     (* This prevents the delete button appearing in the hover view.
      * We'll add it back in for 404s specifically at some point *)
-    if hovering
-    then Vdom.noNode
+    if hovering && (m.permission = Some Read)
+    then iconspacer
     else
-      Html.div
-        [Html.class' "delete"]
-        ( match e.minusButton with
-        | Some msg ->
-            if m.permission = Some ReadWrite
-            then
-              [ buttonLink
-                  ~key:(entryKeyFromIdentifier e.identifier)
-                  (fontAwesome "times-circle")
-                  msg ]
-            else []
-        | None ->
-            iconspacer )
+      match e.minusButton with
+      | Some msg ->
+        Html.div
+          [Html.class' "delete-button"]
+          [ buttonLink
+            ~key:(entryKeyFromIdentifier e.identifier)
+            (fontAwesome "times-circle")
+            msg ]
+      | None ->
+        iconspacer
   in
   let pluslink =
     match e.plusButton with
     | Some msg ->
         if m.permission = Some ReadWrite
-        then [buttonLink ~key:(e.name ^ "-plus") (fontAwesome "plus") msg]
-        else []
+        then
+          Html.div
+            [Html.class' "add-button"]
+            [buttonLink ~key:(e.name ^ "-plus") (fontAwesome "plus") msg]
+        else iconspacer
     | None ->
         iconspacer
-  in
-  let auxViews =
-    Html.div
-      [Html.classList [("aux", true); (httpMethod, true)]]
-      (verb @ pluslink)
   in
   let selected =
     tlidOfIdentifier e.identifier = CursorState.tlidOf m.cursorState
   in
   Html.div
     [Html.classList [("simple-item handler", true); ("selected", selected)]]
-    [minuslink; mainlink; auxViews]
+    [minuslink; linkItem; pluslink]
 
 
 let deploy2html (d : staticDeploy) : msg Html.html =
