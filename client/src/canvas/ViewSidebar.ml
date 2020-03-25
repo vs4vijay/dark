@@ -659,31 +659,31 @@ let closedDeployStats2html (m : model) : msg Html.html =
     ([Html.div [Html.class' "collapsed-icon"] [icon]] @ hoverView)
 
 
-let toggleSidebar (v : sidebarVariant) : msg Html.html =
+let toggleSidebar (isExpanded : bool) : msg Html.html =
   let event =
     ViewUtils.eventNeither ~key:"toggle-sidebar" "click" (fun _ ->
         ToggleSideBar)
   in
-  let button icon tooltip =
-    Html.a [Html.class' "button-link"; Html.title tooltip] [icon; icon]
+  let icon =
+    let view' iconName = Html.span [Html.class' "icon"] [fontAwesome iconName; fontAwesome iconName] in
+    if isExpanded
+    then view' "chevron-left"
+    else view' "chevron-right"
   in
-  let toggleBtn =
-    match v with
-    | SidebarOpen ->
-        button (fontAwesome "chevron-left") "Collapse sidebar"
-    | SidebarClosed ->
-        button (fontAwesome "chevron-right") "Expand sidebar"
+  let label = 
+    if isExpanded
+    then Html.span [Html.class' "label"] [Html.text "Collapse sidebar"]
+    else Vdom.noNode
   in
-  let toggleSide =
-    Html.div
-      [event; Html.class' "toggle-container"]
-      [ Html.p [] [Html.text "Collapse sidebar"]
-      ; Html.div
-          [ Html.classList
-              [("toggle-button", true); ("closed", v = SidebarClosed)] ]
-          [toggleBtn] ]
+  let description =
+    if isExpanded
+    then "Collapse sidebar"
+    else "Expand sidebar"  
   in
-  toggleSide
+  let cls = if isExpanded then "expanded" else "collapsed" in
+  Html.div
+    [event; Html.class' ("toggle-btn " ^ cls); Html.title description]
+    [label ; icon]
 
 
 let stateInfoTohtml (key : string) (value : msg Html.html) : msg Html.html =
@@ -796,23 +796,21 @@ let viewSidebar_ (m : model) : msg Html.html =
     standardCategories m m.handlers m.dbs m.userFunctions m.userTipes m.groups
     @ [f404Category m; deletedCategory m]
   in
-  let showAdminDebugger = function
-    | SidebarClosed when m.isAdmin ->
-        adminDebuggerView m
-    | SidebarClosed | SidebarOpen ->
-        Vdom.noNode
+  let isExpanded = m.sidebarOpen in
+  let showAdminDebugger =
+    if (not isExpanded) && m.isAdmin
+    then adminDebuggerView m
+    else Vdom.noNode
   in
-  let showCategories = function
-    | SidebarClosed ->
-        closedCategory2html
-    | SidebarOpen ->
-        category2html
+  let showCategories =
+    if isExpanded
+    then category2html
+    else closedCategory2html
   in
-  let showDeployStats = function
-    | SidebarClosed ->
-        closedDeployStats2html
-    | SidebarOpen ->
-        deployStats2html
+  let showDeployStats =
+    if isExpanded
+    then deployStats2html
+    else closedDeployStats2html
   in
   let status =
     match Error.asOption m.error with
@@ -834,21 +832,21 @@ let viewSidebar_ (m : model) : msg Html.html =
    * it's inefficient to fully reconstruct the sidebar div each time it's
    * expanded / collapsed. Instead, we build /both/ versions of the sidebar,
    * then toggle the visibility with CSS *)
-  List.map [SidebarClosed; SidebarOpen] ~f:(fun variant ->
-      let active = if m.sidebarOpen then SidebarOpen else SidebarClosed in
-      let isClosed = variant = SidebarClosed in
-      Html.div
+  
+  let content =
+    Html.div
         [ Html.classList
-            [ ("active", variant = active)
-            ; ("viewing-table", true)
-            ; ("isClosed", isClosed) ] ]
-        ( [toggleSidebar variant]
+            [("viewing-table", true)
+            ; ("expanded", isExpanded)
+            ; ("collapsed", not isExpanded) ] ]
+        ( [toggleSidebar isExpanded]
         @ [ Html.div
-              [Html.classList [("groups", true); ("groups-closed", isClosed)]]
-              ( List.map ~f:(showCategories variant m) cats
-              @ [showDeployStats variant m; showAdminDebugger variant] )
-          ; status ] ))
-  |> Html.div
+              [Html.classList [("groups", true); ("groups-closed", not isExpanded)]]
+              ( List.map ~f:(showCategories m) cats
+              @ [showDeployStats m; showAdminDebugger] )
+          ; status ] )
+  in
+  Html.div
        [ Html.id "sidebar-left"
          (* Block opening the omnibox here by preventing canvas pan start *)
        ; nothingMouseEvent "mousedown"
@@ -856,6 +854,7 @@ let viewSidebar_ (m : model) : msg Html.html =
              EnablePanning false)
        ; ViewUtils.eventNoPropagation ~key:"epf" "mouseleave" (fun _ ->
              EnablePanning true) ]
+       [content]
 
 
 let rtCacheKey m =
