@@ -1583,6 +1583,16 @@ and avatarModelMessage =
   ; canvasName : string
   ; timestamp : float }
 
+(* Sidebar state *)
+and sidebarVariant =
+  | SidebarOpen
+  | SidebarClosed
+
+and sidebarState =
+  { mode: sidebarVariant
+  ; onCategory: string option
+  }
+
 and model =
   { error : Error.t
   ; lastMsg : msg
@@ -1648,7 +1658,7 @@ and model =
   ; workerStats : workerStats TLIDDict.t
   ; avatarsList : avatar list
   ; browserId : string
-  ; sidebarOpen : bool
+  ; sidebarState : sidebarState
   ; isAdmin : bool
   ; buildHash : string
   ; lastReload : (Js.Date.t[@opaque]) option
@@ -1680,7 +1690,7 @@ and savedSettings =
   ; handlerProps : handlerProp TLIDDict.t
   ; canvasPos : pos
   ; lastReload : (Js.Date.t[@opaque]) option
-  ; sidebarOpen : bool
+  ; sidebarState : sidebarState
   ; showTopbar : bool }
 [@@deriving show {with_path = false}]
 

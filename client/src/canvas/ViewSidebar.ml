@@ -8,10 +8,6 @@ let missingEventSpaceDesc : string = "Undefined"
 
 let missingEventRouteDesc : string = "Undefined"
 
-type sidebarVariant =
-  | SidebarOpen
-  | SidebarClosed
-
 type identifier =
   | Tlid of TLID.t
   | Other of string
@@ -769,7 +765,7 @@ let viewSidebar_ (m : model) : msg Html.html =
     standardCategories m m.handlers m.dbs m.userFunctions m.userTipes m.groups
     @ [f404Category m; deletedCategory m]
   in
-  let isExpanded = m.sidebarOpen in
+  let isExpanded = match m.sidebarState.mode with SidebarOpen -> true | _ -> false in
   let showAdminDebugger =
     if (not isExpanded) && m.isAdmin
     then adminDebuggerView m
@@ -837,7 +833,7 @@ let rtCacheKey m =
   , m.userFunctions |> TD.mapValues ~f:(fun f -> f.ufMetadata.ufmName)
   , m.userTipes |> TD.mapValues ~f:(fun t -> t.utName)
   , m.f404s
-  , m.sidebarOpen
+  , m.sidebarState
   , m.deletedHandlers
     |> TD.mapValues ~f:(fun (h : handler) -> TL.sortkey (TLHandler h))
   , m.deletedDBs

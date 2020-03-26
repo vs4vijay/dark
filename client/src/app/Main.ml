@@ -1923,8 +1923,14 @@ let update_ (msg : msg) (m : model) : modification =
                 else StrSet.remove ~value:key m.routingTableOpenDetails ) }
           , Cmd.none ))
   | ToggleSideBar ->
+      (* TODO(alice) wrap in sidebar message and collapse *)
+      let newMode =
+        match m.sidebarState.mode with
+        | SidebarOpen -> SidebarClosed
+        | SidebarClosed -> SidebarOpen
+      in
       ReplaceAllModificationsWithThisOne
-        (fun m -> ({m with sidebarOpen = not m.sidebarOpen}, Cmd.none))
+        (fun m -> ({m with sidebarState = {m.sidebarState with mode = newMode }}, Cmd.none))
   | CreateRouteHandler action ->
       let center = Viewport.findNewPos m in
       Entry.submitOmniAction m center action

@@ -448,7 +448,6 @@ and handlerProp j : handlerProp =
   ; hoveringReferences = field "hoveringReferences" (list id) j
   ; execution = field "executing" exeState j }
 
-
 and savedUserSettings (j : Js.Json.t) : savedUserSettings =
   { showUserWelcomeModal =
       withDefault
@@ -456,6 +455,16 @@ and savedUserSettings (j : Js.Json.t) : savedUserSettings =
         (field "showUserWelcomeModal" bool)
         j }
 
+and sidebarVariant (j : Js.Json.t) : sidebarVariant =
+  j |> variants
+    [("SidebarOpen", variant0 SidebarOpen)
+    ;("SidebarClosed", variant0 SidebarClosed)
+    ]
+
+and sidebarState (j : Js.Json.t) : sidebarState =
+    { mode = field "mode" sidebarVariant j
+    ; onCategory = field "onCategory" (optional string) j
+    }
 
 and savedSettings (j : Js.Json.t) : savedSettings =
   (* always use withDefault or optional because the field might be missing due
@@ -479,10 +488,10 @@ and savedSettings (j : Js.Json.t) : savedSettings =
       withDefault StrDict.empty (field "handlerProps" (strDict handlerProp)) j
   ; canvasPos = withDefault Defaults.origin (field "canvasPos" pos) j
   ; lastReload = optional (field "lastReload" jsDate) j
-  ; sidebarOpen =
+  ; sidebarState =
       withDefault
-        Defaults.defaultSavedSettings.sidebarOpen
-        (field "sidebarOpen" bool)
+        Defaults.defaultSidebar
+        (field "sidebarState" sidebarState)
         j
   ; showTopbar =
       withDefault

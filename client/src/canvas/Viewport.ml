@@ -129,5 +129,6 @@ let findNewPos (m : model) : pos =
       (* if the sidebar is open, the users can't see the livevalues, which
       * confused new users. Given we can't get z-index to work, moving it to the
       * side a little seems the best solution for now. *)
-      let offset = {x = (if m.sidebarOpen then 320 else 0); y = 0} in
+      let wideSidebar = match m.sidebarState.mode with SidebarOpen -> true | SidebarClosed -> false in
+      let offset = {x = (if wideSidebar then 320 else 0); y = 0} in
       addPos Defaults.centerPos offset

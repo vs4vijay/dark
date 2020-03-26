@@ -828,6 +828,16 @@ let handlerProp (p : Types.handlerProp) : Js.Json.t =
     [ ("handlerLock", bool p.handlerLock)
     ; ("handlerState", handlerState p.handlerState) ]
 
+let sidebarVariant (s : Types.sidebarVariant) : Js.Json.t =
+    match s with
+    | SidebarOpen -> variant "SidebarOpen" []
+    | SidebarClosed -> variant "SidebarClosed" []
+
+let sidebarState (s: Types.sidebarState) : Js.Json.t =
+    object_
+    [ ("mode", sidebarVariant s.mode)
+    ; ("onCategory", nullable string s.onCategory)
+    ]
 
 let editorSettings (es : Types.editorSettings) : Js.Json.t =
   object_
@@ -850,7 +860,7 @@ let savedSettings (se : Types.savedSettings) : Js.Json.t =
     ; ("canvasPos", pos se.canvasPos)
     ; ( "lastReload"
       , nullable string (Option.map ~f:Js.Date.toString se.lastReload) )
-    ; ("sidebarOpen", bool se.sidebarOpen)
+    ; ("sidebarState", sidebarState se.sidebarState)
     ; ("showTopbar1", bool se.showTopbar) ]
 
 
