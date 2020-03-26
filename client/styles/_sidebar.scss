@@ -6,6 +6,8 @@ $devColor: $blue;
 $prodcloneColor: $magenta;
 $prodColor: black;
 
+$sidebarBgColor: darken($canvas-background, 10%);
+
 $hoverColor: lighten($yellow, 10%);
 
 $primaryColor: $white1;
@@ -25,7 +27,7 @@ $icSize: 16px;
 }
 
 .viewing-table {
-  background-color: darken($canvas-background, 10%);
+  background-color: $sidebarBgColor;
   height: 100%;
   position: relative;
   top: 0;
@@ -118,6 +120,7 @@ $icSize: 16px;
 .sidebar-section {
   margin-bottom: $sectionSpace;
   padding: 0 $hSpace;
+  position: relative;
 
   &.fof, &.deleted {
     margin-left: -1 * $icSize;
@@ -128,13 +131,25 @@ $icSize: 16px;
 .section-summary {
   outline: none;
   display:flex;
-  justify-content: flex-end;
-  align-items: center;
 
-  &::-webkit-details-marker {
-    color: $secondaryColor;
-    &:hover {
-      color: $hoverColor;
+  @at-root .expanded & {
+    justify-content: flex-end;
+    align-items: center;
+
+    &::-webkit-details-marker {
+      color: $secondaryColor;
+      &:hover {
+        color: $hoverColor;
+      }
+    }
+  }
+
+  @at-root .collapsed & {
+    justify-content: flex-start;
+    align-items: flex-end;
+
+    &::-webkit-details-marker {
+      display: none;
     }
   }
 
@@ -144,8 +159,28 @@ $icSize: 16px;
 
   .title {
     width: calc(100% - #{2 * $icSize});
-    .header-icon {
+
+    @at-root .collapsed & {
+      width: 80%;
+      text-align: center;
+    }
+  }
+
+  .header-icon {
+    @at-root .expanded & {
       margin-right: $hSpace;
+      color: $primaryColor;
+    }
+
+    @at-root .collapsed & {
+      margin-right: 0;
+      font-size: 1.2em;
+      color: darken($primaryColor, 30%);
+      transition: 0.2s font-size;
+
+      &:hover{
+        font-size: 2.0em;
+      }
     }
   }
 
@@ -155,6 +190,10 @@ $icSize: 16px;
     font-weight: bold;
     letter-spacing: 0.02em;
     margin-top: 0;
+
+    @at-root .collapsed & {
+      display: none;
+    }
   }
 
   a.button-link { // (+) icon for section
@@ -162,7 +201,55 @@ $icSize: 16px;
     &:hover {
       color: $hoverColor;
     }
+
+    @at-root .collapsed & {
+      font-size: 0.8em;
+    }
   }
+}
+
+// Wrapper for categories' content
+.section-content {
+  @at-root .expanded & .title {
+    display: none;
+  }
+
+  @at-root .collapsed & {
+    background-color: $sidebarBgColor;
+    width: 300px;
+    max-height: 400px;
+    padding: 10px;
+    margin-top: 10px;
+
+    overflow-y: scroll;
+    box-shadow: $sidebard-preview-shadow;
+
+    z-index: 1;
+    position: absolute;
+    left: $sidebarClosedWidth;
+    top: -1.25em;
+
+    .title {
+      width: 100%;
+      display: block;
+
+      .category-name {
+        width: 100%;
+        text-align: center;
+        display: inline-block;
+      }
+    }
+
+    .header-icon {
+      display: none;
+    }
+  }
+
+  // hide wrapper for empty sections
+  @at-root .collapsed .sidebar-section.empty & {
+    display: none;
+  }
+
 }
 
 // Toplevel items

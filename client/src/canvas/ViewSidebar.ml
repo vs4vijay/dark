@@ -3,6 +3,7 @@ open ViewUtils
 module B = BlankOr
 module TL = Toplevel
 module TD = TLIDDict
+module Cmd = Tea.Cmd
 
 let missingEventSpaceDesc : string = "Undefined"
 
@@ -538,8 +539,8 @@ and category2html (m : model) (c : category) : msg Html.html =
   let openEventHandler, openAttr =
     categoryOpenCloseHelpers m c.classname c.count
   in
+  let title = categoryTitle c.name c.classname in
   let header =
-    let title = categoryTitle c.name c.classname in
     let plusButton =
       match c.plusButton with
       | Some msg ->
@@ -557,14 +558,19 @@ and category2html (m : model) (c : category) : msg Html.html =
       [Html.class' "section-summary"; openEventHandler]
       [title ; plusButton]
   in
-  let entries = List.map ~f:(item2html ~hovering:false m) c.entries in
+  let content =
+    let entries = List.map ~f:(item2html ~hovering:false m) c.entries in
+    Html.div
+      [Html.class' "section-content"]
+      (title :: entries)
+  in
   let classes =
     Html.classList
       [("sidebar-section", true); (c.classname, true); ("empty", c.count = 0)]
   in
   (if c.count = 0 then Html.div else Html.details)
     [classes; openAttr]
-    (header :: entries)
+    [header ; content]
 
 
 let closedCategory2html (m : model) (c : category) : msg Html.html =
@@ -636,7 +642,7 @@ let closedDeployStats2html (m : model) : msg Html.html =
 let toggleSidebar (isExpanded : bool) : msg Html.html =
   let event =
     ViewUtils.eventNeither ~key:"toggle-sidebar" "click" (fun _ ->
-        ToggleSideBar)
+        SidebarMsg ToggleSidebarMode)
   in
   let description =
     if isExpanded
@@ -759,6 +765,22 @@ let adminDebuggerView (m : model) : msg Html.html =
         [Html.class' ("collapsed-icon " ^ m.environment)]
         ([environment; icon] @ hoverView) ]
 
+let update (msg : sidebarMsg) : modification =
+  match msg with
+  | ToggleSidebarMode ->
+    ReplaceAllModificationsWithThisOne
+      (fun m -> 
+        let newMode =
+          match m.sidebarState.mode with
+          | SidebarOpen -> SidebarClosed
+          | SidebarClosed -> SidebarOpen
+        in
+      ({m with sidebarState = {m.sidebarState with mode = newMode }}, Cmd.none)
+      )
+  | SetOnCategory catName ->
+    ReplaceAllModificationsWithThisOne (fun m -> ({m with sidebarState = {m.sidebarState with onCategory = Some catName}}, Cmd.none))
+  | ClearOnCategory ->
+    ReplaceAllModificationsWithThisOne (fun m -> ({m with sidebarState = {m.sidebarState with onCategory = None}}, Cmd.none))
 
 let viewSidebar_ (m : model) : msg Html.html =
   let cats =
@@ -766,20 +788,20 @@ let viewSidebar_ (m : model) : msg Html.html =
     @ [f404Category m; deletedCategory m]
   in
   let isExpanded = match m.sidebarState.mode with SidebarOpen -> true | _ -> false in
-  let showAdminDebugger =
+  let showAdminDebugger = Vdom.noNode
+    (*
     if (not isExpanded) && m.isAdmin
     then adminDebuggerView m
     else Vdom.noNode
+    *)
   in
-  let showCategories =
-    if isExpanded
-    then category2html
-    else closedCategory2html
-  in
-  let showDeployStats =
+  let showCategories = category2html in
+  let showDeployStats = Vdom.noNode
+    (* TODO(alice)
     if isExpanded
     then deployStats2html
     else closedDeployStats2html
+    *)
   in
   let status =
     match Error.asOption m.error with
@@ -812,7 +834,7 @@ let viewSidebar_ (m : model) : msg Html.html =
         @ [ Html.div
               [Html.classList [("groups", true); ("groups-closed", not isExpanded)]]
               ( List.map ~f:(showCategories m) cats
-              @ [showDeployStats m; showAdminDebugger] )
+              @ [showDeployStats; showAdminDebugger] )
           ; status ] )
   in
   Html.div

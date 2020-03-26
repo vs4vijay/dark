@@ -1266,7 +1266,7 @@ and msg =
   | TraceMouseLeave of TLID.t * traceID * mouseEvent
   | TriggerHandler of TLID.t
   | CreateRouteHandler of omniAction
-  | ToggleSideBar
+  | SidebarMsg of sidebarMsg
   | CreateFunction
   | ExtractFunction
   | CreateType
@@ -1592,6 +1592,11 @@ and sidebarState =
   { mode: sidebarVariant
   ; onCategory: string option
   }
+
+and sidebarMsg =
+  | ToggleSidebarMode
+  | SetOnCategory of string
+  | ClearOnCategory
 
 and model =
   { error : Error.t
