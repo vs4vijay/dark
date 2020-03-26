@@ -525,7 +525,7 @@ let deployStats2html (m : model) : msg Html.html =
     Html.classList
       [("sidebar-section", true); ("deploys", true); ("empty", count = 0)]
   in
-  (if count = 0 then Html.div else Html.details)
+    Html.details
     [classes; openAttr]
     (header :: deploys)
 
@@ -603,7 +603,7 @@ and category2html (m : model) (c : category) : msg Html.html =
     Html.classList
       [("sidebar-section", true); (c.classname, true); ("empty", c.count = 0)]
   in
-  (if c.count = 0 then Html.div else Html.details)
+  Html.details
     [classes; openAttr]
     [summary ; content]
 

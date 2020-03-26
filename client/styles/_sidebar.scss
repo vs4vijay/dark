@@ -125,6 +125,10 @@ $icSize: 16px;
   &.fof, &.deleted {
     margin-left: -1 * $icSize;
   }
+
+  &.empty summary::-webkit-details-marker {
+    display: none;
+  }
 }
 
 // Category titles
@@ -186,7 +190,7 @@ $icSize: 16px;
 
   .category-name {
     color: $grey3;
-    font-size: $icSize;
+    font-size: 1.1em;
     font-weight: bold;
     letter-spacing: 0.02em;
     margin-top: 0;
@@ -238,11 +242,6 @@ $icSize: 16px;
     .category-icon {
       display: none;
     }
-  }
-
-  // hide wrapper for empty sections
-  @at-root .collapsed .sidebar-section.empty & {
-    display: none;
   }
 
 }
