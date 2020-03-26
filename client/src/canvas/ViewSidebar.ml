@@ -54,7 +54,7 @@ let buttonLink ~(key : string) (content : msg Html.html) (handler : msg) :
   Html.a [event; Html.class' "button-link"] [content]
 
 
-let categoryIcon (name : string) : msg Html.html list =
+let categoryIcon_ (name : string) : msg Html.html list =
   let darkIcon = ViewUtils.darkIcon in
   match String.toLower name with
   | "http" ->
@@ -470,18 +470,17 @@ let deploy2html (d : staticDeploy) : msg Html.html =
 
 (* Category Views *)
 
-let categoryTitle (name : string) (classname : string) : msg Html.html =
-  let icon =
-    Html.div
-      [ Html.class' "header-icon"
+let categoryIcon ?(props = []) (name: string) (description: string) : msg Html.html =
+  Html.div
+      ([ Html.class' "category-icon"
       ; Html.title name
       ; Vdom.attribute "" "role" "img"
-      ; Vdom.attribute "" "alt" name ]
-      (categoryIcon classname)
-  in
-  let text cl t = Html.span [Html.class' cl] [Html.text t] in
-  Html.div [Html.class' "title"] [icon; text "category-name" name]
+      ; Vdom.attribute "" "alt" description
+      ] @ props)
+      (categoryIcon_ name)
 
+let categoryName (name : string) : msg Html.html =
+  Html.span [Html.class' "category-name"] [Html.text name]
 
 let categoryOpenCloseHelpers (m : model) (classname : string) (count : int) :
     msg Vdom.property * msg Vdom.property =
@@ -503,7 +502,11 @@ let deployStats2html (m : model) : msg Html.html =
   let count = List.length entries in
   let openEventHandler, openAttr = categoryOpenCloseHelpers m "deploys" count in
   let header =
-    let title = categoryTitle "Static Assets" "static" in
+    let title = 
+      Html.div
+        [Html.class' "category-header"]
+        [categoryIcon "static" "Static Assets"; categoryName "Static Assets"]
+    in
     let deployLatest =
       if count <> 0
       then entries |> List.take ~count:1 |> List.map ~f:deploy2html
@@ -539,8 +542,16 @@ and category2html (m : model) (c : category) : msg Html.html =
   let openEventHandler, openAttr =
     categoryOpenCloseHelpers m c.classname c.count
   in
-  let title = categoryTitle c.name c.classname in
-  let header =
+  let openAttr =
+    if m.sidebarState.mode = SidebarClosed
+    then
+      if m.sidebarState.onCategory = Some c.classname
+      then Vdom.attribute "" "open" ""
+      else Vdom.noProp
+    else openAttr
+  in
+  let title = categoryName c.name in
+  let summary =
     let plusButton =
       match c.plusButton with
       | Some msg ->
@@ -554,15 +565,39 @@ and category2html (m : model) (c : category) : msg Html.html =
       | None ->
           Vdom.noNode
     in
+    let catIcon =
+      let props = 
+        [ eventNoPropagation ~key:("cat-open-"^c.classname) "mouseenter" (fun _ -> 
+          if m.sidebarState.mode = SidebarClosed
+          then SidebarMsg  (SetOnCategory c.classname)
+          else IgnoreMsg
+          )
+        ; eventNoPropagation ~key:"return-to-arch" "click" (fun _ ->
+          if m.sidebarState.mode = SidebarClosed
+          then
+            match c.iconAction with Some ev -> ev | None -> IgnoreMsg
+          else IgnoreMsg
+          )
+        ]
+      in
+      categoryIcon c.classname c.name ~props
+    in
+    let header =
+      Html.div
+        [Html.class' "category-header"]
+        [catIcon; title]
+    in
     Html.summary
       [Html.class' "section-summary"; openEventHandler]
-      [title ; plusButton]
+      [header ; plusButton]
   in
   let content =
     let entries = List.map ~f:(item2html ~hovering:false m) c.entries in
     Html.div
-      [Html.class' "section-content"]
-      (title :: entries)
+      [Html.class' "section-content"
+      ; eventNoPropagation ~key:("cat-close-"^c.classname) "mouseleave" (fun _ -> SidebarMsg ClearOnCategory)
+      ]
+      (categoryName c.name :: entries)
   in
   let classes =
     Html.classList
@@ -570,51 +605,7 @@ and category2html (m : model) (c : category) : msg Html.html =
   in
   (if c.count = 0 then Html.div else Html.details)
     [classes; openAttr]
-    [header ; content]
-
-
-let closedCategory2html (m : model) (c : category) : msg Html.html =
-  let plusButton =
-    match c.plusButton with
-    | Some msg ->
-        if m.permission = Some ReadWrite
-        then
-          [ buttonLink
-              ~key:("plus-" ^ c.classname)
-              (fontAwesome "plus-circle")
-              msg ]
-        else []
-    | None ->
-        []
-  in
-  let hoverView =
-    let entries = List.map ~f:(item2html ~hovering:true m) c.entries in
-    if c.count = 0
-    then [Html.div [Html.class' "hover"] [Html.text "Empty"]]
-    else [Html.div [Html.class' "hover"] entries]
-  in
-  (* Make the sidebar icons go back to the architectural view:
-   https://trello.com/c/ajQDbUR2/1490-make-clicking-on-any-structural-sidebar-button-go-back-to-architectural-view-dbs-http-cron-workers-10-10 *)
-  let event =
-    match c.iconAction with
-    | Some ev ->
-        [ ViewUtils.eventNoPropagation ~key:"return-to-arch" "click" (fun _ ->
-              ev) ]
-    | None ->
-        []
-  in
-  let icon =
-    Html.div
-      ( event
-      @ [ Html.classList [("header-icon", true)]
-        ; Vdom.attribute "" "role" "img"
-        ; Vdom.attribute "" "alt" c.name ] )
-      (categoryIcon c.classname)
-  in
-  Html.div
-    [ Html.classList
-        [("collapsed", true); (c.classname, true); ("empty", c.count = 0)] ]
-    ([Html.div [Html.class' "collapsed-icon"] (icon :: plusButton)] @ hoverView)
+    [summary ; content]
 
 
 let closedDeployStats2html (m : model) : msg Html.html =
@@ -632,7 +623,7 @@ let closedDeployStats2html (m : model) : msg Html.html =
       [ Html.classList [("header-icon", true); ("empty", count = 0)]
       ; Vdom.attribute "" "role" "img"
       ; Vdom.attribute "" "alt" "Static Assets" ]
-      (categoryIcon "static")
+      (categoryIcon_ "static")
   in
   Html.div
     [Html.class' "collapsed"]
@@ -770,12 +761,13 @@ let update (msg : sidebarMsg) : modification =
   | ToggleSidebarMode ->
     ReplaceAllModificationsWithThisOne
       (fun m -> 
-        let newMode =
+        let mode =
           match m.sidebarState.mode with
           | SidebarOpen -> SidebarClosed
           | SidebarClosed -> SidebarOpen
         in
-      ({m with sidebarState = {m.sidebarState with mode = newMode }}, Cmd.none)
+        let onCategory = None in
+      ({m with sidebarState = {mode ; onCategory}}, Cmd.none)
       )
   | SetOnCategory catName ->
     ReplaceAllModificationsWithThisOne (fun m -> ({m with sidebarState = {m.sidebarState with onCategory = Some catName}}, Cmd.none))

@@ -157,7 +157,7 @@ $icSize: 16px;
     display: inline-block;
   }
 
-  .title {
+  .category-header {
     width: calc(100% - #{2 * $icSize});
 
     @at-root .collapsed & {
@@ -166,7 +166,7 @@ $icSize: 16px;
     }
   }
 
-  .header-icon {
+  .category-icon {
     @at-root .expanded & {
       margin-right: $hSpace;
       color: $primaryColor;
@@ -210,7 +210,7 @@ $icSize: 16px;
 
 // Wrapper for categories' content
 .section-content {
-  @at-root .expanded & .title {
+  @at-root .expanded & .category-name {
     display: none;
   }
 
@@ -229,18 +229,13 @@ $icSize: 16px;
     left: $sidebarClosedWidth;
     top: -1.25em;
 
-    .title {
+    .category-name {
       width: 100%;
+      text-align: center;
       display: block;
-
-      .category-name {
-        width: 100%;
-        text-align: center;
-        display: inline-block;
-      }
     }
 
-    .header-icon {
+    .category-icon {
       display: none;
     }
   }
