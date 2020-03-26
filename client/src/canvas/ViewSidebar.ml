@@ -91,7 +91,7 @@ let handlerCategory
     (hs : handler list) : category =
   let handlers = hs |> List.filter ~f:(fun h -> filter (TLHandler h)) in
   { count = List.length handlers
-  ; name = String.toUpper name
+  ; name = name
   ; plusButton = Some (CreateRouteHandler action)
   ; classname = String.toLower name
   ; iconAction
@@ -127,7 +127,7 @@ let httpCategory (handlers : handler list) : category =
 let cronCategory (handlers : handler list) : category =
   handlerCategory
     TL.isCronHandler
-    "CRON"
+    "Cron"
     (NewCronHandler None)
     (Some GoToArchitecturalView)
     handlers
@@ -143,7 +143,7 @@ let workerCategory (handlers : handler list) : category =
       TL.isWorkerHandler tl
       || (* Show the old workers here for now *)
       TL.isDeprecatedCustomHandler tl)
-    "WORKER"
+    "Worker"
     (NewWorkerHandler None)
     (Some GoToArchitecturalView)
     handlers
