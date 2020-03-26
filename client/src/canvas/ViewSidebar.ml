@@ -642,7 +642,6 @@ let toggleSidebar (isExpanded : bool) : msg Html.html =
     ViewUtils.eventNeither ~key:"toggle-sidebar" "click" (fun _ ->
         ToggleSideBar)
   in
-  let cls = if isExpanded then "expanded" else "collapsed" in
   let description =
     if isExpanded
     then "Collapse sidebar"
@@ -656,7 +655,7 @@ let toggleSidebar (isExpanded : bool) : msg Html.html =
   in
   let label = Html.span [Html.class' "label"] [Html.text description] in
   Html.div
-    [event; Html.class' ("toggle-btn " ^ cls); Html.title description]
+    [event; Html.class' "toggle-btn"; Html.title description]
     [label ; icon]
 
 
