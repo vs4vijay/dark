@@ -21,7 +21,7 @@ let unsetCSRF : string = "UNSET_CSRF"
 let defaultUserSettings : savedUserSettings = {showUserWelcomeModal = true}
 
 let defaultSidebar : sidebarState =
-  { mode = SidebarOpen
+  { mode = DetailedMode
   ; onCategory = None
   }
 

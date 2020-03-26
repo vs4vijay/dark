@@ -34,12 +34,12 @@ $icSize: 16px;
   left: 0;
   box-sizing: border-box;
 
-  &.expanded {
+  &.detailed {
     width: $sidebarFullWidth;
     overflow-y: scroll;
   }
 
-  &.collapsed {
+  &.abridged {
     width: $sidebarClosedWidth;
     &::-webkit-scrollbar {
       width: 0px; // Remove scrollbar space
@@ -71,7 +71,7 @@ $icSize: 16px;
     }
   }
 
-  @at-root .expanded > & {
+  @at-root .detailed > & {
     padding-right: 5px;
     transition: padding-right 0.15s;
 
@@ -88,7 +88,7 @@ $icSize: 16px;
     }
   }
 
-  @at-root .collapsed > & {
+  @at-root .abridged > & {
     justify-content: center;
     padding-right: 0;
     padding-left: 0;
@@ -136,7 +136,7 @@ $icSize: 16px;
   outline: none;
   display:flex;
 
-  @at-root .expanded & {
+  @at-root .detailed & {
     justify-content: flex-end;
     align-items: center;
 
@@ -148,7 +148,7 @@ $icSize: 16px;
     }
   }
 
-  @at-root .collapsed & {
+  @at-root .abridged & {
     justify-content: flex-start;
     align-items: flex-end;
 
@@ -164,19 +164,19 @@ $icSize: 16px;
   .category-header {
     width: calc(100% - #{2 * $icSize});
 
-    @at-root .collapsed & {
+    @at-root .abridged & {
       width: 80%;
       text-align: center;
     }
   }
 
   .category-icon {
-    @at-root .expanded & {
+    @at-root .detailed & {
       margin-right: $hSpace;
       color: $primaryColor;
     }
 
-    @at-root .collapsed & {
+    @at-root .abridged & {
       margin-right: 0;
       font-size: 1.2em;
       color: darken($primaryColor, 30%);
@@ -195,7 +195,7 @@ $icSize: 16px;
     letter-spacing: 0.02em;
     margin-top: 0;
 
-    @at-root .collapsed & {
+    @at-root .abridged & {
       display: none;
     }
   }
@@ -206,7 +206,7 @@ $icSize: 16px;
       color: $hoverColor;
     }
 
-    @at-root .collapsed & {
+    @at-root .abridged & {
       font-size: 0.8em;
     }
   }
@@ -214,11 +214,11 @@ $icSize: 16px;
 
 // Wrapper for categories' content
 .section-content {
-  @at-root .expanded & .category-name {
+  @at-root .detailed & .category-name {
     display: none;
   }
 
-  @at-root .collapsed & {
+  @at-root .abridged & {
     background-color: $sidebarBgColor;
     width: 300px;
     max-height: 400px;

@@ -1585,8 +1585,8 @@ and avatarModelMessage =
 
 (* Sidebar state *)
 and sidebarVariant =
-  | SidebarOpen
-  | SidebarClosed
+  | DetailedMode
+  | AbridgedMode
 
 and sidebarState =
   { mode: sidebarVariant

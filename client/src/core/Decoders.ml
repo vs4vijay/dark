@@ -457,8 +457,8 @@ and savedUserSettings (j : Js.Json.t) : savedUserSettings =
 
 and sidebarVariant (j : Js.Json.t) : sidebarVariant =
   j |> variants
-    [("SidebarOpen", variant0 SidebarOpen)
-    ;("SidebarClosed", variant0 SidebarClosed)
+    [("DetailedMode", variant0 DetailedMode)
+    ;("AbridgedMode", variant0 AbridgedMode)
     ]
 
 and sidebarState (j : Js.Json.t) : sidebarState =

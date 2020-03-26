@@ -543,7 +543,7 @@ and category2html (m : model) (c : category) : msg Html.html =
     categoryOpenCloseHelpers m c.classname c.count
   in
   let openAttr =
-    if m.sidebarState.mode = SidebarClosed
+    if m.sidebarState.mode = AbridgedMode
     then
       if m.sidebarState.onCategory = Some c.classname
       then Vdom.attribute "" "open" ""
@@ -568,12 +568,12 @@ and category2html (m : model) (c : category) : msg Html.html =
     let catIcon =
       let props = 
         [ eventNoPropagation ~key:("cat-open-"^c.classname) "mouseenter" (fun _ -> 
-          if m.sidebarState.mode = SidebarClosed
+          if m.sidebarState.mode = AbridgedMode
           then SidebarMsg  (SetOnCategory c.classname)
           else IgnoreMsg
           )
         ; eventNoPropagation ~key:"return-to-arch" "click" (fun _ ->
-          if m.sidebarState.mode = SidebarClosed
+          if m.sidebarState.mode = AbridgedMode
           then
             match c.iconAction with Some ev -> ev | None -> IgnoreMsg
           else IgnoreMsg
@@ -630,19 +630,19 @@ let closedDeployStats2html (m : model) : msg Html.html =
     ([Html.div [Html.class' "collapsed-icon"] [icon]] @ hoverView)
 
 
-let toggleSidebar (isExpanded : bool) : msg Html.html =
+let toggleBtn (isDetailed : bool) : msg Html.html =
   let event =
     ViewUtils.eventNeither ~key:"toggle-sidebar" "click" (fun _ ->
         SidebarMsg ToggleSidebarMode)
   in
   let description =
-    if isExpanded
+    if isDetailed
     then "Collapse sidebar"
     else "Expand sidebar"  
   in
   let icon =
     let view' iconName = Html.span [Html.class' "icon"] [fontAwesome iconName; fontAwesome iconName] in
-    if isExpanded
+    if isDetailed
     then view' "chevron-left"
     else view' "chevron-right"
   in
@@ -763,8 +763,8 @@ let update (msg : sidebarMsg) : modification =
       (fun m -> 
         let mode =
           match m.sidebarState.mode with
-          | SidebarOpen -> SidebarClosed
-          | SidebarClosed -> SidebarOpen
+          | DetailedMode -> AbridgedMode
+          | AbridgedMode -> DetailedMode
         in
         let onCategory = None in
       ({m with sidebarState = {mode ; onCategory}}, Cmd.none)
@@ -779,7 +779,7 @@ let viewSidebar_ (m : model) : msg Html.html =
     standardCategories m m.handlers m.dbs m.userFunctions m.userTipes m.groups
     @ [f404Category m; deletedCategory m]
   in
-  let isExpanded = match m.sidebarState.mode with SidebarOpen -> true | _ -> false in
+  let isDetailed = match m.sidebarState.mode with DetailedMode -> true | _ -> false in
   let showAdminDebugger = Vdom.noNode
     (*
     if (not isExpanded) && m.isAdmin
@@ -811,23 +811,16 @@ let viewSidebar_ (m : model) : msg Html.html =
     | _ ->
         Html.noNode
   in
-  (* Because the sidebar consists of a lot of nested elements with icons,
-   * it's inefficient to fully reconstruct the sidebar div each time it's
-   * expanded / collapsed. Instead, we build /both/ versions of the sidebar,
-   * then toggle the visibility with CSS *)
-  
   let content =
+    let categories =
+      (List.map ~f:(showCategories m) cats) @ [showDeployStats; showAdminDebugger; status]
+    in
     Html.div
         [ Html.classList
             [("viewing-table", true)
-            ; ("expanded", isExpanded)
-            ; ("collapsed", not isExpanded) ] ]
-        ( [toggleSidebar isExpanded]
-        @ [ Html.div
-              [Html.classList [("groups", true); ("groups-closed", not isExpanded)]]
-              ( List.map ~f:(showCategories m) cats
-              @ [showDeployStats; showAdminDebugger] )
-          ; status ] )
+            ; ("detailed", isDetailed)
+            ; ("abridged", not isDetailed) ] ]
+        ( toggleBtn isDetailed :: categories )
   in
   Html.div
        [ Html.id "sidebar-left"

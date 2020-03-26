@@ -830,8 +830,8 @@ let handlerProp (p : Types.handlerProp) : Js.Json.t =
 
 let sidebarVariant (s : Types.sidebarVariant) : Js.Json.t =
     match s with
-    | SidebarOpen -> variant "SidebarOpen" []
-    | SidebarClosed -> variant "SidebarClosed" []
+    | DetailedMode -> variant "DetailedMode" []
+    | AbridgedMode -> variant "AbridgedMode" []
 
 let sidebarState (s: Types.sidebarState) : Js.Json.t =
     object_
