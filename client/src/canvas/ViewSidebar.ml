@@ -50,6 +50,13 @@ and item =
   | Category of category
   | Entry of entry
 
+let rec count (s : item) : int =
+  match s with
+  | Entry _ ->
+      1
+  | Category c ->
+      c.entries |> List.map ~f:count |> List.sum  
+
 let iconButton ~(key : string) ~(icon : string) ~(classname : string) (handler : msg) :
   msg Html.html =
   let event = ViewUtils.eventNeither ~key "click" (fun _ -> handler) in
@@ -311,12 +318,6 @@ let groupCategory (groups : group list) : category =
   ; entries }
 
 
-let rec count (s : item) : int =
-  match s with
-  | Entry _ ->
-      1
-  | Category c ->
-      c.entries |> List.map ~f:count |> List.sum
 
 
 let standardCategories m hs dbs ufns tipes groups =
@@ -396,7 +397,7 @@ let deletedCategory (m : model) : category =
   ; entries = List.map cats ~f:(fun c -> Category c) }
 
 
-let entry2html (m : model) (e : entry) : msg Html.html =
+let viewEntry (m : model) (e : entry) : msg Html.html =
   let name = e.name in
   let selected =
     tlidOfIdentifier e.identifier = CursorState.tlidOf m.cursorState
@@ -457,7 +458,7 @@ let entry2html (m : model) (e : entry) : msg Html.html =
     [minuslink; linkItem; pluslink]
 
 
-let deploy2html (d : staticDeploy) : msg Html.html =
+let viewDeploy (d : staticDeploy) : msg Html.html =
   let statusString =
     match d.status with Deployed -> "Deployed" | Deploying -> "Deploying"
   in
@@ -490,7 +491,7 @@ let deploy2html (d : staticDeploy) : msg Html.html =
         [Html.text (Js.Date.toUTCString d.lastUpdate)] ]
 
 
-(* Category Views *)
+
 
 let categoryName (name : string) : msg Html.html =
   Html.span [Html.class' "category-name"] [Html.text name]
@@ -510,7 +511,7 @@ let categoryOpenCloseHelpers (m : model) (classname : string) (count : int) :
   (openEventHandler, openAttr)
 
 
-let deployStats2html (m : model) : msg Html.html =
+let viewDeployStats (m : model) : msg Html.html =
   let entries =
     [
       { deployHash = "abc123"
@@ -555,7 +556,7 @@ let deployStats2html (m : model) : msg Html.html =
     in
     let deployLatest =
       if count <> 0
-      then entries |> List.take ~count:1 |> List.map ~f:deploy2html
+      then entries |> List.take ~count:1 |> List.map ~f:viewDeploy
       else []
     in
     Html.summary
@@ -566,10 +567,10 @@ let deployStats2html (m : model) : msg Html.html =
     if isDetailed
     then 
       if count > 1
-      then entries |> List.drop ~count:1 |> List.map ~f:deploy2html
+      then entries |> List.drop ~count:1 |> List.map ~f:viewDeploy
       else []
     else
-      entries |> List.map ~f:deploy2html
+      entries |> List.map ~f:viewDeploy
   in
   let content = Html.div [Html.class' "section-content"; eventNoPropagation ~key:"cat-close-deploy" "mouseleave" (fun _ -> SidebarMsg ResetSidebar)] (title :: deploys) in
   let classes =
@@ -581,17 +582,17 @@ let deployStats2html (m : model) : msg Html.html =
     [summary ; content]
 
 
-let rec item2html (m : model) (s : item) : msg Html.html =
+let rec viewItem (m : model) (s : item) : msg Html.html =
   match s with
   | Category c ->
       if c.count > 0
-      then category2html m c
+      then viewCategory m c
       else Vdom.noNode
   | Entry e ->
-      entry2html m e
+      viewEntry m e
 
 
-and category2html (m : model) (c : category) : msg Html.html =
+and viewCategory (m : model) (c : category) : msg Html.html =
   let openEventHandler, openAttr =
     categoryOpenCloseHelpers m c.classname c.count
   in
@@ -647,7 +648,7 @@ and category2html (m : model) (c : category) : msg Html.html =
       [header ; plusButton]
   in
   let content =
-    let entries = List.map ~f:(item2html m) c.entries in
+    let entries = List.map ~f:(viewItem m) c.entries in
     Html.div
       [Html.class' "section-content"
       ; eventNoPropagation ~key:("cat-close-"^c.classname) "mouseleave" (fun _ -> if not isSubCat then SidebarMsg ResetSidebar else IgnoreMsg)
@@ -662,7 +663,7 @@ and category2html (m : model) (c : category) : msg Html.html =
     [classes; openAttr]
     [summary ; content]
 
-let toggleBtn (isDetailed : bool) : msg Html.html =
+let viewToggleBtn (isDetailed : bool) : msg Html.html =
   let event =
     ViewUtils.eventNeither ~key:"toggle-sidebar" "click" (fun _ ->
         SidebarMsg ToggleSidebarMode)
@@ -841,14 +842,14 @@ let viewSidebar_ (m : model) : msg Html.html =
   in
   let content =
     let categories =
-      (List.map ~f:(category2html m) cats) @ [deployStats2html m; showAdminDebugger; status]
+      (List.map ~f:(viewCategory m) cats) @ [viewDeployStats m; showAdminDebugger; status]
     in
     Html.div
         [ Html.classList
             [("viewing-table", true)
             ; ("detailed", isDetailed)
             ; ("abridged", not isDetailed) ] ]
-        ( toggleBtn isDetailed :: categories )
+        ( viewToggleBtn isDetailed :: categories )
   in
   Html.div
        [ Html.id "sidebar-left"
