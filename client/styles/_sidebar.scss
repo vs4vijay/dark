@@ -321,35 +321,39 @@ $icSize: 1.0em;
 }
 
 // Special cases: Deleted & 404s
-
-.detailed .sidebar-section .sidebar-section {
-  padding-right: 0;
-}
-
-.detailed .sidebar-section .section-content .section-content {
-  margin-left: 1.5em;
-}
-
-.detailed .sidebar-section.fof .section-content {
-  margin-left: 0.5em;
-}
-
-.abridged .sidebar-section .section-content .section-summary {
-  width: 100%;
-  align-items: center;
-
-  &::-webkit-details-marker {
-    display: inline-block;
+.detailed .sidebar-section {
+  &.fof .section-content {
+    margin-left: 0.5em;
   }
 
-  .category-name {
-    text-align: left;
-    font-size: 1.0em;
+  .sidebar-section {
+    padding-right: 0;
+  }
+
+  .section-content .section-content {
+    margin-left: 1.5em;
   }
 }
 
-.abridged .sidebar-section .section-content .section-content .category-name {
-  display: none;
+
+.abridged .sidebar-section .section-content{
+  .section-summary {
+    width: 100%;
+    align-items: center;
+
+    &::-webkit-details-marker {
+      display: inline-block;
+    }
+
+    .category-name {
+      text-align: left;
+      font-size: 1.0em;
+    }
+  }
+
+  .section-content .category-name {
+    display: none;
+  }
 }
 
 .sidebar-section.deleted, .sidebar-section.fof {
@@ -373,4 +377,88 @@ $icSize: 1.0em;
       margin-left: $hSpace;
     }
   }
+}
+
+/* Special Case: Static Assets */
+.sidebar-section.deploys {
+
+  .simple-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+
+    .hash {
+      position: relative;
+      display: inline-block;
+      border: 1px solid $secondaryColor;
+      padding: 2px;
+      border-radius: 2px;
+      a {
+        text-decoration: none;
+        font-size: 0.7em;
+        color: $primaryColor;
+        &:hover {
+          color: $hoverColor;
+        }
+      }
+
+      .copy-hash {
+        font-size: 12px;
+        position: absolute;
+        top: -8px;
+        right: -6px;
+
+        &:hover {color: $hoverColor;}
+      }
+    }
+    .status {
+      color: $secondaryColor;
+      display: inline-block;
+      &.success {
+        color: $green;
+      }
+    }
+
+    .timestamp {
+      display: block;
+      width: 100%;
+      font-size: 0.7em;
+      text-align: right;
+    }
+  }
+
+  .section-summary {
+    display: block;
+    .category-header {
+      display: inline-block;
+
+      @at-root .detailed {
+        width: max-content;
+      }
+    }
+
+    .simple-item {
+      margin-left: $icSize;
+      margin-right: $hSpace;
+      margin-top: 5px;
+
+      @at-root .abridged & {
+        display: none;
+      }
+    }
+  }
+
+  .section-content {
+
+    @at-root .detailed & {
+      margin-left: $icSize;
+    }
+
+    .simple-item {
+      margin-top: $icSize;
+    }
+  }
+
+  
 }

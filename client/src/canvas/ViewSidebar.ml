@@ -461,21 +461,32 @@ let deploy2html (d : staticDeploy) : msg Html.html =
   let statusString =
     match d.status with Deployed -> "Deployed" | Deploying -> "Deploying"
   in
+  let copyBtn =
+    Html.div 
+      [ Html.class' "icon-button copy-hash"
+      ; ViewUtils.eventNeither
+        "click"
+        ~key:("hash-"^d.deployHash)
+        (fun m -> ClipboardCopyLivevalue (d.deployHash, m.mePos))
+      ]
+      [fontAwesome "copy"]
+  in
   Html.div
     [Html.class' "simple-item deploy"]
-    [ Html.div
-        [Html.class' "deploy-status"]
-        [ Html.a
-            [Html.href d.url; Html.target "_blank"; Html.class' "hash"]
-            [Html.text d.deployHash]
-        ; Html.span
-            [ Html.classList
-                [ ("status", true)
-                ; ( "success"
-                  , match d.status with Deployed -> true | _ -> false ) ] ]
-            [Html.text statusString] ]
-    ; Html.span
-        [Html.class' "datetime"]
+    [ Html.div [Html.class' "hash"]
+      [ Html.a
+          [Html.href d.url; Html.target "_blank"]
+          [Html.text d.deployHash]
+      ; copyBtn
+      ]
+    ; Html.div
+      [ Html.classList
+          [ ("status", true)
+          ; ( "success"
+            , match d.status with Deployed -> true | _ -> false ) ] ]
+      [Html.text statusString]
+    ; Html.div
+        [Html.class' "timestamp"]
         [Html.text (Js.Date.toUTCString d.lastUpdate)] ]
 
 
@@ -500,14 +511,47 @@ let categoryOpenCloseHelpers (m : model) (classname : string) (count : int) :
 
 
 let deployStats2html (m : model) : msg Html.html =
-  let entries = m.staticDeploys in
+  let entries =
+    [
+      { deployHash = "abc123"
+      ; url = "https://sfsdfasdf.dfasdfa"
+      ; lastUpdate = Js.Date.now () |> Js.Date.fromFloat
+      ; status = Deployed }
+      ; { deployHash = "xyz098"
+      ; url = "https://fdsfsfjlksfjlk.sd"
+      ; lastUpdate = Js.Date.now () |> Js.Date.fromFloat
+      ; status = Deploying }
+    ]
+  in
+    (* TODO(alice) m.staticDeploys in *)
   let count = List.length entries in
+  let isDetailed = match m.sidebarState.mode with DetailedMode -> true | _ -> false in
   let openEventHandler, openAttr = categoryOpenCloseHelpers m "deploys" count in
-  let header =
-    let title = 
+  let openAttr =
+    if m.sidebarState.mode = AbridgedMode
+    then
+      if m.sidebarState.onCategory = Some "deploys"
+      then Vdom.attribute "" "open" ""
+      else Vdom.noProp
+    else openAttr
+  in
+  let title = categoryName "Static Assets" in
+  let summary =
+    let props =
+      [ eventNoPropagation
+        ~key:"cat-open-deploys"
+        "mouseenter"
+        (fun _ -> 
+          if m.sidebarState.mode = AbridgedMode
+          then SidebarMsg  (SetOnCategory "deploys")
+          else IgnoreMsg
+        )
+      ]
+    in
+    let header = 
       Html.div
         [Html.class' "category-header"]
-        [categoryIcon "static" "Static Assets"; categoryName "Static Assets"]
+        [categoryIcon "static" "Static Assets" ~props; title]
     in
     let deployLatest =
       if count <> 0
@@ -515,21 +559,26 @@ let deployStats2html (m : model) : msg Html.html =
       else []
     in
     Html.summary
-      [openEventHandler]
-      [Html.div [Html.class' "header"] (title :: deployLatest)]
+      [openEventHandler; Html.class' "section-summary"]
+      (header :: deployLatest)
   in
   let deploys =
-    if count > 1
-    then entries |> List.drop ~count:1 |> List.map ~f:deploy2html
-    else []
+    if isDetailed
+    then 
+      if count > 1
+      then entries |> List.drop ~count:1 |> List.map ~f:deploy2html
+      else []
+    else
+      entries |> List.map ~f:deploy2html
   in
+  let content = Html.div [Html.class' "section-content"; eventNoPropagation ~key:"cat-close-deploy" "mouseleave" (fun _ -> SidebarMsg ClearOnCategory)] (title :: deploys) in
   let classes =
     Html.classList
       [("sidebar-section", true); ("deploys", true); ("empty", count = 0)]
   in
     Html.details
     [classes; openAttr]
-    (header :: deploys)
+    [summary ; content]
 
 
 let rec item2html (m : model) (s : item) : msg Html.html =
@@ -612,29 +661,6 @@ and category2html (m : model) (c : category) : msg Html.html =
   Html.details
     [classes; openAttr]
     [summary ; content]
-
-
-let closedDeployStats2html (m : model) : msg Html.html =
-  let entries = m.staticDeploys in
-  let count = List.length entries in
-  let hoverView =
-    if count > 0
-    then
-      let deploys = List.map ~f:deploy2html entries in
-      [Html.div [Html.class' "hover"] deploys]
-    else [Vdom.noNode]
-  in
-  let icon =
-    Html.div
-      [ Html.classList [("header-icon", true); ("empty", count = 0)]
-      ; Vdom.attribute "" "role" "img"
-      ; Vdom.attribute "" "alt" "Static Assets" ]
-      (categoryIcon_ "static")
-  in
-  Html.div
-    [Html.class' "collapsed"]
-    ([Html.div [Html.class' "collapsed-icon"] [icon]] @ hoverView)
-
 
 let toggleBtn (isDetailed : bool) : msg Html.html =
   let event =
@@ -793,14 +819,6 @@ let viewSidebar_ (m : model) : msg Html.html =
     else Vdom.noNode
     *)
   in
-  let showCategories = category2html in
-  let showDeployStats = Vdom.noNode
-    (* TODO(alice)
-    if isExpanded
-    then deployStats2html
-    else closedDeployStats2html
-    *)
-  in
   let status =
     match Error.asOption m.error with
     | Some _ when m.isAdmin ->
@@ -819,7 +837,7 @@ let viewSidebar_ (m : model) : msg Html.html =
   in
   let content =
     let categories =
-      (List.map ~f:(showCategories m) cats) @ [showDeployStats; showAdminDebugger; status]
+      (List.map ~f:(category2html m) cats) @ [deployStats2html m; showAdminDebugger; status]
     in
     Html.div
         [ Html.classList
@@ -835,7 +853,10 @@ let viewSidebar_ (m : model) : msg Html.html =
        ; ViewUtils.eventNoPropagation ~key:"ept" "mouseenter" (fun _ ->
              EnablePanning false)
        ; ViewUtils.eventNoPropagation ~key:"epf" "mouseleave" (fun _ ->
-             EnablePanning true) ]
+            if isDetailed
+            then EnablePanning true
+            else SidebarMsg ClearOnCategory
+        ) ]
        [content]
 
 
