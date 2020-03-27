@@ -681,7 +681,7 @@ let viewToggleBtn (isDetailed : bool) : msg Html.html =
   in
   let label = Html.span [Html.class' "label"] [Html.text description] in
   Html.div
-    [event; Html.class' "toggle-btn"; Html.title description]
+    [event; Html.class' "toggle-sidebar-btn"; Html.title description]
     [label ; icon]
 
 
