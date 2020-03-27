@@ -458,7 +458,109 @@ $icSize: 1.0em;
     .simple-item {
       margin-top: $icSize;
     }
+  }  
+}
+
+// Special Case : Admin
+.abridged .sidebar-section.admin {
+  padding: 0;
+
+  .section-summary {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    margin-left: -0.5em;
+
+    div {
+      display: block;
+    }
+
+    .environment {
+      background: $white1;
+      font-size: 0.4em;
+      border-radius: 2px;
+      padding: 2px;
+
+      &.dev {
+        color: $blue;
+      }
+
+      &.clone {
+        color: magenta;
+      }
+
+      &.production {
+        color: $black3;
+      }
+    }
   }
 
-  
+  .section-content {
+    display: none;
+  }
+
+  &:hover .section-content {
+    display: block;
+
+    a {
+      color: $grey3;
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      height: 20px;
+      cursor: pointer;
+      input {
+        cursor: pointer;
+      }
+      p {
+        margin-left: 5px;
+      }
+    }
+    .state-info {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+      .state-info-row {
+        margin-top: 0px;
+        margin-bottom: 0px;
+      }
+    }
+    .state-info-row {
+      display: flex;
+      height: 20px;
+      align-items: center;
+      justify-content: flex-start;
+      margin: 5px;
+      margin-left: 17px;
+
+      &.debugger:hover {
+        color: $white3;
+      }
+
+      &.save-state {
+        border: 1px solid;
+        border-radius: 2px;
+        padding: 4px;
+        height: 10px;
+        margin-bottom: 20px;
+        width: fit-content;
+        font-size: 0.5em;
+        cursor: pointer;
+
+        &:hover {
+          background: $grey3;
+          color: darken($canvas-background, 10%);
+        }
+      }
+      .sep {
+        width: 15px;
+      }
+      .value {
+        white-space: nowrap;
+        max-width: 210px;
+      }
+    }
+  }
 }

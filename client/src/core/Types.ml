@@ -968,6 +968,22 @@ and fnpMsg =
   | ParamDropIntoSpace of int
   | Reset
 
+(* Sidebar state *)
+and sidebarVariant =
+  | DetailedMode
+  | AbridgedMode
+
+and sidebarState =
+  { mode: sidebarVariant
+  ; onCategory: string option
+  }
+
+and sidebarMsg =
+  | ToggleSidebarMode
+  | SetOnCategory of string
+  | ClearOnCategory
+  (* | CopyDeployHash of string *)
+
 (* ------------------- *)
 (* Modifications *)
 (* ------------------- *)
@@ -1582,21 +1598,6 @@ and avatarModelMessage =
   ; tlid : TLID.t option
   ; canvasName : string
   ; timestamp : float }
-
-(* Sidebar state *)
-and sidebarVariant =
-  | DetailedMode
-  | AbridgedMode
-
-and sidebarState =
-  { mode: sidebarVariant
-  ; onCategory: string option
-  }
-
-and sidebarMsg =
-  | ToggleSidebarMode
-  | SetOnCategory of string
-  | ClearOnCategory
 
 and model =
   { error : Error.t

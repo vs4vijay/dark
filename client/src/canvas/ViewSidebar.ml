@@ -717,7 +717,7 @@ let adminDebuggerView (m : model) : msg Html.html =
     ^ "]"
   in
   let environment =
-    Html.span [Html.class' "environment"] [Html.text environmentName]
+    Html.div [Html.class' ("environment " ^ environmentName)] [Html.text environmentName]
   in
   let stateInfo =
     Html.div
@@ -769,24 +769,26 @@ let adminDebuggerView (m : model) : msg Html.html =
       [Html.text "SAVE STATE FOR INTEGRATION TEST"]
   in
   let hoverView =
-    [ Html.div
-        [Html.class' "hover admin-state"]
-        [stateInfo; toggleTimer; toggleFluidDebugger; debugger; saveTestButton]
-    ]
+    Html.div
+      [Html.class' "section-content"]
+      [stateInfo; toggleTimer; toggleFluidDebugger; debugger; saveTestButton]
   in
   let icon =
     Html.div
-      [ Html.class' "header-icon admin-settings"
+      [ Html.class' "category-icon"
       ; Html.title "Admin"
       ; Vdom.attribute "" "role" "img"
       ; Vdom.attribute "" "alt" "Admin" ]
       [fontAwesome "cog"]
   in
+  let sectionIcon =
+    Html.div
+        [Html.class' ("section-summary")]
+        [icon; environment]
+  in
   Html.div
-    [Html.class' "collapsed admin"]
-    [ Html.div
-        [Html.class' ("collapsed-icon " ^ m.environment)]
-        ([environment; icon] @ hoverView) ]
+    [Html.class' "sidebar-section admin"]
+    [ sectionIcon ; hoverView ]
 
 let update (msg : sidebarMsg) : modification =
   match msg with
@@ -812,12 +814,10 @@ let viewSidebar_ (m : model) : msg Html.html =
     @ [f404Category m; deletedCategory m]
   in
   let isDetailed = match m.sidebarState.mode with DetailedMode -> true | _ -> false in
-  let showAdminDebugger = Vdom.noNode
-    (*
-    if (not isExpanded) && m.isAdmin
+  let showAdminDebugger =
+    if (not isDetailed) && m.isAdmin
     then adminDebuggerView m
     else Vdom.noNode
-    *)
   in
   let status =
     match Error.asOption m.error with
