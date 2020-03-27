@@ -9,6 +9,8 @@ let missingEventSpaceDesc : string = "Undefined"
 
 let missingEventRouteDesc : string = "Undefined"
 
+let delPrefix : string = "deleted-"
+
 type identifier =
   | Tlid of TLID.t
   | Other of string
@@ -48,15 +50,14 @@ and item =
   | Category of category
   | Entry of entry
 
-let buttonLink ~(key : string) (content : msg Html.html) (handler : msg) :
-    msg Html.html =
+let iconButton ~(key : string) ~(icon : string) ~(classname : string) (handler : msg) :
+  msg Html.html =
   let event = ViewUtils.eventNeither ~key "click" (fun _ -> handler) in
-  Html.a [event; Html.class' "button-link"] [content]
-
+  Html.div [event; Html.class' ("icon-button " ^ classname)] [fontAwesome icon]
 
 let categoryIcon_ (name : string) : msg Html.html list =
   let darkIcon = ViewUtils.darkIcon in
-  match String.toLower name with
+  match name |> String.toLower |> Regex.replace ~re:(Regex.regex delPrefix) ~repl:""  with
   | "http" ->
       [darkIcon "http"]
   | "dbs" ->
@@ -79,9 +80,18 @@ let categoryIcon_ (name : string) : msg Html.html list =
       [darkIcon "fof"]
   | "group" ->
       [fontAwesome "object-group"]
-  | _ ->
+  | other ->
+    Debug.loG "undefined" other;
       [darkIcon "undefined"]
 
+let categoryIcon ?(props = []) (name: string) (description: string) : msg Html.html =
+  Html.div
+      ([ Html.class' "category-icon"
+      ; Html.title name
+      ; Vdom.attribute "" "role" "img"
+      ; Vdom.attribute "" "alt" description
+      ] @ props)
+      (categoryIcon_ name)
 
 let handlerCategory
     (filter : toplevel -> bool)
@@ -362,7 +372,7 @@ let deletedCategory (m : model) : category =
              plusButton = None (* only allow new entries on the main category *)
            ; classname =
                (* dont open/close in lockstep with parent *)
-               "deleted-" ^ c.classname
+               delPrefix ^ c.classname
            ; entries =
                List.map c.entries ~f:(function
                    | Entry e ->
@@ -386,7 +396,7 @@ let deletedCategory (m : model) : category =
   ; entries = List.map cats ~f:(fun c -> Category c) }
 
 
-let entry2html ~hovering (m : model) (e : entry) : msg Html.html =
+let entry2html (m : model) (e : entry) : msg Html.html =
   let name = e.name in
   let selected =
     tlidOfIdentifier e.identifier = CursorState.tlidOf m.cursorState
@@ -415,17 +425,16 @@ let entry2html ~hovering (m : model) (e : entry) : msg Html.html =
   let minuslink =
     (* This prevents the delete button appearing in the hover view.
      * We'll add it back in for 404s specifically at some point *)
-    if hovering && (m.permission = Some Read)
+    if m.permission = Some Read
     then iconspacer
     else
       match e.minusButton with
       | Some msg ->
-        Html.div
-          [Html.class' "delete-button"]
-          [ buttonLink
-            ~key:(entryKeyFromIdentifier e.identifier)
-            (fontAwesome "times-circle")
-            msg ]
+      iconButton
+        ~key:(entryKeyFromIdentifier e.identifier)
+        ~icon: "times-circle"
+        ~classname: "delete-button"
+        msg
       | None ->
         iconspacer
   in
@@ -434,9 +443,11 @@ let entry2html ~hovering (m : model) (e : entry) : msg Html.html =
     | Some msg ->
         if m.permission = Some ReadWrite
         then
-          Html.div
-            [Html.class' "add-button"]
-            [buttonLink ~key:(e.name ^ "-plus") (fontAwesome "plus") msg]
+          iconButton
+            ~key:(e.name ^ "-plus")
+            ~icon:"plus-circle"
+            ~classname:"add-button"
+            msg
         else iconspacer
     | None ->
         iconspacer
@@ -469,15 +480,6 @@ let deploy2html (d : staticDeploy) : msg Html.html =
 
 
 (* Category Views *)
-
-let categoryIcon ?(props = []) (name: string) (description: string) : msg Html.html =
-  Html.div
-      ([ Html.class' "category-icon"
-      ; Html.title name
-      ; Vdom.attribute "" "role" "img"
-      ; Vdom.attribute "" "alt" description
-      ] @ props)
-      (categoryIcon_ name)
 
 let categoryName (name : string) : msg Html.html =
   Html.span [Html.class' "category-name"] [Html.text name]
@@ -530,12 +532,12 @@ let deployStats2html (m : model) : msg Html.html =
     (header :: deploys)
 
 
-let rec item2html ~hovering (m : model) (s : item) : msg Html.html =
+let rec item2html (m : model) (s : item) : msg Html.html =
   match s with
   | Category c ->
       category2html m c
   | Entry e ->
-      entry2html ~hovering m e
+      entry2html m e
 
 
 and category2html (m : model) (c : category) : msg Html.html =
@@ -557,9 +559,10 @@ and category2html (m : model) (c : category) : msg Html.html =
       | Some msg ->
           if m.permission = Some ReadWrite
           then
-            buttonLink
+            iconButton
                 ~key:("plus-" ^ c.classname)
-                (fontAwesome "plus-circle")
+                ~icon:"plus-circle"
+                ~classname:"create-tl-icon"
                 msg
           else Vdom.noNode
       | None ->
@@ -592,7 +595,7 @@ and category2html (m : model) (c : category) : msg Html.html =
       [header ; plusButton]
   in
   let content =
-    let entries = List.map ~f:(item2html ~hovering:false m) c.entries in
+    let entries = List.map ~f:(item2html m) c.entries in
     Html.div
       [Html.class' "section-content"
       ; eventNoPropagation ~key:("cat-close-"^c.classname) "mouseleave" (fun _ -> SidebarMsg ClearOnCategory)

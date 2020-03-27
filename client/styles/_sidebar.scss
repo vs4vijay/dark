@@ -122,9 +122,11 @@ $icSize: 16px;
   padding: 0 $hSpace;
   position: relative;
 
-  &.fof, &.deleted {
-    margin-left: -1 * $icSize;
-  }
+  @at-root .detailed & {
+    &.fof > summary, &.deleted > summary {
+      margin-left: -1 * $icSize;
+    }
+  } 
 
   &.empty summary::-webkit-details-marker {
     display: none;
@@ -200,7 +202,7 @@ $icSize: 16px;
     }
   }
 
-  a.button-link { // (+) icon for section
+  .create-tl-icon {
     font-size: 1.2em;
     &:hover {
       color: $hoverColor;
@@ -214,7 +216,7 @@ $icSize: 16px;
 
 // Wrapper for categories' content
 .section-content {
-  @at-root .detailed & .category-name {
+  @at-root .detailed & > .category-name {
     display: none;
   }
 
