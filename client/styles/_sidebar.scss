@@ -223,7 +223,7 @@ $icSize: 1.0em;
     display: none;
   }
 
-  @at-root .abridged & {
+  @at-root .abridged > .sidebar-section > & {
     background-color: $sidebarBgColor;
     width: $sidebarFullWidth;
     max-height: 400px;
@@ -332,6 +332,24 @@ $icSize: 1.0em;
 
 .detailed .sidebar-section.fof .section-content {
   margin-left: 0.5em;
+}
+
+.abridged .sidebar-section .section-content .section-summary {
+  width: 100%;
+  align-items: center;
+
+  &::-webkit-details-marker {
+    display: inline-block;
+  }
+
+  .category-name {
+    text-align: left;
+    font-size: 1.0em;
+  }
+}
+
+.abridged .sidebar-section .section-content .section-content .category-name {
+  display: none;
 }
 
 .sidebar-section.deleted, .sidebar-section.fof {

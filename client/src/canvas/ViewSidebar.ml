@@ -535,7 +535,9 @@ let deployStats2html (m : model) : msg Html.html =
 let rec item2html (m : model) (s : item) : msg Html.html =
   match s with
   | Category c ->
-      category2html m c
+      if c.count > 0
+      then category2html m c
+      else Vdom.noNode
   | Entry e ->
       entry2html m e
 
@@ -552,6 +554,7 @@ and category2html (m : model) (c : category) : msg Html.html =
       else Vdom.noProp
     else openAttr
   in
+  let isSubCat = String.contains ~substring:delPrefix c.classname in
   let title = categoryName c.name in
   let summary =
     let plusButton =
@@ -571,12 +574,12 @@ and category2html (m : model) (c : category) : msg Html.html =
     let catIcon =
       let props = 
         [ eventNoPropagation ~key:("cat-open-"^c.classname) "mouseenter" (fun _ -> 
-          if m.sidebarState.mode = AbridgedMode
+          if m.sidebarState.mode = AbridgedMode && not isSubCat
           then SidebarMsg  (SetOnCategory c.classname)
           else IgnoreMsg
           )
         ; eventNoPropagation ~key:"return-to-arch" "click" (fun _ ->
-          if m.sidebarState.mode = AbridgedMode
+          if m.sidebarState.mode = AbridgedMode && not isSubCat
           then
             match c.iconAction with Some ev -> ev | None -> IgnoreMsg
           else IgnoreMsg
@@ -598,7 +601,7 @@ and category2html (m : model) (c : category) : msg Html.html =
     let entries = List.map ~f:(item2html m) c.entries in
     Html.div
       [Html.class' "section-content"
-      ; eventNoPropagation ~key:("cat-close-"^c.classname) "mouseleave" (fun _ -> SidebarMsg ClearOnCategory)
+      ; eventNoPropagation ~key:("cat-close-"^c.classname) "mouseleave" (fun _ -> if not isSubCat then SidebarMsg ClearOnCategory else IgnoreMsg)
       ]
       (categoryName c.name :: entries)
   in
