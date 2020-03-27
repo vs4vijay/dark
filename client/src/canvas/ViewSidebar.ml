@@ -402,16 +402,16 @@ let entry2html (m : model) (e : entry) : msg Html.html =
     tlidOfIdentifier e.identifier = CursorState.tlidOf m.cursorState
   in
   let linkItem =
+    let verb =
+      match e.verb with
+      | Some v ->
+          Html.span [Html.class' ("verb " ^ v)] [Html.text v]
+      | _ ->
+          Vdom.noNode
+    in
     match e.destination with
     | Some dest ->
       let cls = "toplevel-link" ^ (if selected then " selected" else "") in
-      let verb =
-        match e.verb with
-        | Some v ->
-            Html.span [Html.class' ("verb " ^ v)] [Html.text v]
-        | _ ->
-            Vdom.noNode
-      in
       let path = Html.span [Html.class' "path"] [Html.text name] in
       Html.span
         [Html.class' "toplevel-name"]
@@ -419,7 +419,7 @@ let entry2html (m : model) (e : entry) : msg Html.html =
     | _ ->
       Html.span
         [Html.class' "toplevel-name"]
-        [Html.text name]
+        [Html.text name; verb]
   in
   let iconspacer = Html.div [Html.class' "icon-spacer"] [] in
   let minuslink =
@@ -432,7 +432,7 @@ let entry2html (m : model) (e : entry) : msg Html.html =
       | Some msg ->
       iconButton
         ~key:(entryKeyFromIdentifier e.identifier)
-        ~icon: "times-circle"
+        ~icon: "minus-circle"
         ~classname: "delete-button"
         msg
       | None ->

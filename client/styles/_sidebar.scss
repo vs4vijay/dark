@@ -15,7 +15,7 @@ $secondaryColor: $grey2;
 
 $sectionSpace: 20px;
 $hSpace: 5px;
-$icSize: 16px;
+$icSize: 1.0em;
 
 #sidebar-left {
   width: max-content;
@@ -42,24 +42,41 @@ $icSize: 16px;
   &.abridged {
     width: $sidebarClosedWidth;
     &::-webkit-scrollbar {
-      width: 0px; // Remove scrollbar space
+      width: 0; // Remove scrollbar space
     }
   }
 }
 
-// table wrapper
+// Category block
+.sidebar-section {
+  margin-bottom: $sectionSpace;
+  padding: 0 $hSpace;
+  position: relative;
+
+  @at-root .detailed & {
+    &.fof > summary, &.deleted > summary {
+      margin-left: -1 * $icSize;
+    }
+  } 
+
+  &.empty summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+// toggle button to change between detailed & abridge modes
 .toggle-btn {
   height: 30px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  margin-bottom: 5px;
+  margin-bottom: $hSpace;
   color: $secondaryColor;
   cursor: pointer;
   margin-right: 0.25em;
 
   .label {
-    margin-right: 5px;
+    margin-right: $hSpace;
   }
 
   .icon {
@@ -116,24 +133,7 @@ $icSize: 16px;
   }
 }
 
-// Category blocks
-.sidebar-section {
-  margin-bottom: $sectionSpace;
-  padding: 0 $hSpace;
-  position: relative;
-
-  @at-root .detailed & {
-    &.fof > summary, &.deleted > summary {
-      margin-left: -1 * $icSize;
-    }
-  } 
-
-  &.empty summary::-webkit-details-marker {
-    display: none;
-  }
-}
-
-// Category titles
+// Category summary
 .section-summary {
   outline: none;
   display:flex;
@@ -164,7 +164,10 @@ $icSize: 16px;
   }
 
   .category-header {
-    width: calc(100% - #{2 * $icSize});
+
+    @at-root .detailed & {
+      width: calc(100% - #{2 * $icSize});
+    }
 
     @at-root .abridged & {
       width: 80%;
@@ -222,10 +225,10 @@ $icSize: 16px;
 
   @at-root .abridged & {
     background-color: $sidebarBgColor;
-    width: 300px;
+    width: $sidebarFullWidth;
     max-height: 400px;
-    padding: 10px;
-    margin-top: 10px;
+    padding: $hSpace;
+    margin-top: 2 * $hSpace;
 
     overflow-y: scroll;
     box-shadow: $sidebard-preview-shadow;
@@ -248,7 +251,7 @@ $icSize: 16px;
 
 }
 
-// Toplevel items
+// Category items
 .simple-item {
   div {
     display: inline-block;
@@ -256,12 +259,16 @@ $icSize: 16px;
 
   .icon-spacer {
     display: inline-block;
-    width: 16px;
-    height: 16px;
+    width: $icSize;
+    height: $icSize;
+
+    @at-root .abridged & {
+      display: none;
+    }
   }
 
   .toplevel-name {
-    width: calc(100% - 32px);
+    width: calc(100% - #{2 * $icSize});
     display: inline-block;
 
     a.toplevel-link {
@@ -289,26 +296,63 @@ $icSize: 16px;
       &.selected .path::before {
         color: $hoverColor;
       }
+    }
+
+    .verb {
+      color: $secondaryColor;
+
+      &.GET {
+        color: $http-get;
+      }
+      &.POST {
+        color: $http-post;
+      }
+      &.DELETE {
+        color: $http-delete;
+      }
+      &.PUT {
+        color: $http-put;
+      }
+      &.PATCH {
+        color: $http-patch;
+      }
+    }
+  }
+}
+
+// Special cases: Deleted & 404s
+
+.detailed .sidebar-section .sidebar-section {
+  padding-right: 0;
+}
+
+.detailed .sidebar-section .section-content .section-content {
+  margin-left: 1.5em;
+}
+
+.detailed .sidebar-section.fof .section-content {
+  margin-left: 0.5em;
+}
+
+.sidebar-section.deleted, .sidebar-section.fof {
+  .simple-item {
+    display: flex;
+    justify-content: flex-end;
+
+    .toplevel-name {
+      width: calc(100% - #{3 * $icSize});
 
       .verb {
-        color: $secondaryColor;
-
-        &.GET {
-          color: $http-get;
-        }
-        &.POST {
-          color: $http-post;
-        }
-        &.DELETE {
-          color: $http-delete;
-        }
-        &.PUT {
-          color: $http-put;
-        }
-        &.PATCH {
-          color: $http-patch;
-        }
+        float: right;
       }
+    }
+    .delete-button {
+      margin-right: $hSpace;
+      color: $secondaryColor;
+    }
+
+    .add-button {
+      margin-left: $hSpace;
     }
   }
 }
