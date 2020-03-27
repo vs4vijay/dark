@@ -974,9 +974,8 @@ and sidebarVariant =
   | AbridgedMode
 
 and sidebarState =
-  { mode: sidebarVariant
-  ; onCategory: string option
-  }
+  { mode : sidebarVariant
+  ; onCategory : string option }
 
 and sidebarMsg =
   | ToggleSidebarMode

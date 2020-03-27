@@ -448,6 +448,7 @@ and handlerProp j : handlerProp =
   ; hoveringReferences = field "hoveringReferences" (list id) j
   ; execution = field "executing" exeState j }
 
+
 and savedUserSettings (j : Js.Json.t) : savedUserSettings =
   { showUserWelcomeModal =
       withDefault
@@ -455,16 +456,18 @@ and savedUserSettings (j : Js.Json.t) : savedUserSettings =
         (field "showUserWelcomeModal" bool)
         j }
 
+
 and sidebarVariant (j : Js.Json.t) : sidebarVariant =
-  j |> variants
-    [("DetailedMode", variant0 DetailedMode)
-    ;("AbridgedMode", variant0 AbridgedMode)
-    ]
+  j
+  |> variants
+       [ ("DetailedMode", variant0 DetailedMode)
+       ; ("AbridgedMode", variant0 AbridgedMode) ]
+
 
 and sidebarState (j : Js.Json.t) : sidebarState =
-    { mode = field "mode" sidebarVariant j
-    ; onCategory = field "onCategory" (optional string) j
-    }
+  { mode = field "mode" sidebarVariant j
+  ; onCategory = field "onCategory" (optional string) j }
+
 
 and savedSettings (j : Js.Json.t) : savedSettings =
   (* always use withDefault or optional because the field might be missing due
@@ -489,10 +492,7 @@ and savedSettings (j : Js.Json.t) : savedSettings =
   ; canvasPos = withDefault Defaults.origin (field "canvasPos" pos) j
   ; lastReload = optional (field "lastReload" jsDate) j
   ; sidebarState =
-      withDefault
-        Defaults.defaultSidebar
-        (field "sidebarState" sidebarState)
-        j
+      withDefault Defaults.defaultSidebar (field "sidebarState" sidebarState) j
   ; showTopbar =
       withDefault
         Defaults.defaultSavedSettings.showTopbar

@@ -15,7 +15,7 @@ $secondaryColor: $grey2;
 
 $sectionSpace: 20px;
 $hSpace: 5px;
-$icSize: 1.0em;
+$icSize: 1em;
 
 #sidebar-left {
   width: max-content;
@@ -54,10 +54,11 @@ $icSize: 1.0em;
   position: relative;
 
   @at-root .detailed & {
-    &.fof > summary, &.deleted > summary {
+    &.fof > summary,
+    &.deleted > summary {
       margin-left: -1 * $icSize;
     }
-  } 
+  }
 
   &.empty summary::-webkit-details-marker {
     display: none;
@@ -81,7 +82,7 @@ $icSize: 1.0em;
 
   .icon {
     .fa {
-      font-size: 1.0em;
+      font-size: 1em;
       &:nth-child(2) {
         margin-left: -5px;
       }
@@ -95,7 +96,7 @@ $icSize: 1.0em;
     &:hover {
       color: $primaryColor;
       padding-right: 8px;
-      
+
       animation-name: bounceLeft;
       animation-duration: 0.3s;
       animation-delay: 0.15s;
@@ -136,7 +137,7 @@ $icSize: 1.0em;
 // Category summary
 .section-summary {
   outline: none;
-  display:flex;
+  display: flex;
 
   @at-root .detailed & {
     justify-content: flex-end;
@@ -164,7 +165,6 @@ $icSize: 1.0em;
   }
 
   .category-header {
-
     @at-root .detailed & {
       width: calc(100% - #{2 * $icSize});
     }
@@ -187,8 +187,8 @@ $icSize: 1.0em;
       color: darken($primaryColor, 30%);
       transition: 0.2s font-size;
 
-      &:hover{
-        font-size: 2.0em;
+      &:hover {
+        font-size: 2em;
       }
     }
   }
@@ -248,7 +248,6 @@ $icSize: 1.0em;
       display: none;
     }
   }
-
 }
 
 // Category items
@@ -272,7 +271,7 @@ $icSize: 1.0em;
     display: inline-block;
 
     a.toplevel-link {
-      display:flex;
+      display: flex;
       justify-content: space-between;
       color: $primaryColor;
       text-decoration: none;
@@ -285,7 +284,7 @@ $icSize: 1.0em;
         width: 20px;
         vertical-align: middle;
         display: inline-block;
-        text-align: center
+        text-align: center;
       }
 
       &:hover .path::before {
@@ -335,8 +334,7 @@ $icSize: 1.0em;
   }
 }
 
-
-.abridged .sidebar-section .section-content{
+.abridged .sidebar-section .section-content {
   .section-summary {
     width: 100%;
     align-items: center;
@@ -347,7 +345,7 @@ $icSize: 1.0em;
 
     .category-name {
       text-align: left;
-      font-size: 1.0em;
+      font-size: 1em;
     }
   }
 
@@ -356,7 +354,8 @@ $icSize: 1.0em;
   }
 }
 
-.sidebar-section.deleted, .sidebar-section.fof {
+.sidebar-section.deleted,
+.sidebar-section.fof {
   .simple-item {
     display: flex;
     justify-content: flex-end;
@@ -381,7 +380,6 @@ $icSize: 1.0em;
 
 /* Special Case: Static Assets */
 .sidebar-section.deploys {
-
   .simple-item {
     display: flex;
     flex-wrap: wrap;
@@ -409,7 +407,9 @@ $icSize: 1.0em;
         top: -8px;
         right: -6px;
 
-        &:hover {color: $hoverColor;}
+        &:hover {
+          color: $hoverColor;
+        }
       }
     }
     .status {
@@ -450,7 +450,6 @@ $icSize: 1.0em;
   }
 
   .section-content {
-
     @at-root .detailed & {
       margin-left: $icSize;
     }
@@ -458,7 +457,7 @@ $icSize: 1.0em;
     .simple-item {
       margin-top: $icSize;
     }
-  }  
+  }
 }
 
 // Special Case : Admin

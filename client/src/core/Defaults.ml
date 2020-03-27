@@ -20,10 +20,7 @@ let unsetCSRF : string = "UNSET_CSRF"
 
 let defaultUserSettings : savedUserSettings = {showUserWelcomeModal = true}
 
-let defaultSidebar : sidebarState =
-  { mode = DetailedMode
-  ; onCategory = None
-  }
+let defaultSidebar : sidebarState = {mode = DetailedMode; onCategory = None}
 
 let defaultSavedSettings : savedSettings =
   { editorSettings = {runTimers = true; showFluidDebugger = false}
@@ -84,6 +81,7 @@ let defaultMenu : menuState = {isOpen = false}
 
 let defaultFnSpace : fnProps =
   {draggingParamIndex = None; dragOverSpaceIndex = None; justMovedParam = None}
+
 
 let defaultModel : model =
   { error = Error.default

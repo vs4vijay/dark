@@ -828,16 +828,20 @@ let handlerProp (p : Types.handlerProp) : Js.Json.t =
     [ ("handlerLock", bool p.handlerLock)
     ; ("handlerState", handlerState p.handlerState) ]
 
-let sidebarVariant (s : Types.sidebarVariant) : Js.Json.t =
-    match s with
-    | DetailedMode -> variant "DetailedMode" []
-    | AbridgedMode -> variant "AbridgedMode" []
 
-let sidebarState (s: Types.sidebarState) : Js.Json.t =
-    object_
+let sidebarVariant (s : Types.sidebarVariant) : Js.Json.t =
+  match s with
+  | DetailedMode ->
+      variant "DetailedMode" []
+  | AbridgedMode ->
+      variant "AbridgedMode" []
+
+
+let sidebarState (s : Types.sidebarState) : Js.Json.t =
+  object_
     [ ("mode", sidebarVariant s.mode)
-    ; ("onCategory", nullable string s.onCategory)
-    ]
+    ; ("onCategory", nullable string s.onCategory) ]
+
 
 let editorSettings (es : Types.editorSettings) : Js.Json.t =
   object_
