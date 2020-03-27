@@ -981,8 +981,7 @@ and sidebarState =
 and sidebarMsg =
   | ToggleSidebarMode
   | SetOnCategory of string
-  | ClearOnCategory
-  (* | CopyDeployHash of string *)
+  | ResetSidebar
 
 (* ------------------- *)
 (* Modifications *)

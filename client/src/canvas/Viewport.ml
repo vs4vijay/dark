@@ -1,5 +1,6 @@
 open Prelude
 module TL = Toplevel
+module Cmd = Tea.Cmd
 
 let addPos (a : pos) (b : pos) : pos = {x = a.x + b.x; y = a.y + b.y}
 
@@ -132,3 +133,6 @@ let findNewPos (m : model) : pos =
       let wideSidebar = match m.sidebarState.mode with DetailedMode -> true | AbridgedMode -> false in
       let offset = {x = (if wideSidebar then 320 else 0); y = 0} in
       addPos Defaults.centerPos offset
+
+let enablePan (enablePan: bool) (m : model) : model * msg Cmd.t =
+  ({m with canvasProps = {m.canvasProps with enablePan}}, Cmd.none)

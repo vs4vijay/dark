@@ -467,7 +467,7 @@ let deploy2html (d : staticDeploy) : msg Html.html =
       ; ViewUtils.eventNeither
         "click"
         ~key:("hash-"^d.deployHash)
-        (fun m -> ClipboardCopyLivevalue (d.deployHash, m.mePos))
+        (fun m -> ClipboardCopyLivevalue ("\"" ^ d.deployHash ^ "\"", m.mePos))
       ]
       [fontAwesome "copy"]
   in
@@ -571,7 +571,7 @@ let deployStats2html (m : model) : msg Html.html =
     else
       entries |> List.map ~f:deploy2html
   in
-  let content = Html.div [Html.class' "section-content"; eventNoPropagation ~key:"cat-close-deploy" "mouseleave" (fun _ -> SidebarMsg ClearOnCategory)] (title :: deploys) in
+  let content = Html.div [Html.class' "section-content"; eventNoPropagation ~key:"cat-close-deploy" "mouseleave" (fun _ -> SidebarMsg ResetSidebar)] (title :: deploys) in
   let classes =
     Html.classList
       [("sidebar-section", true); ("deploys", true); ("empty", count = 0)]
@@ -650,7 +650,7 @@ and category2html (m : model) (c : category) : msg Html.html =
     let entries = List.map ~f:(item2html m) c.entries in
     Html.div
       [Html.class' "section-content"
-      ; eventNoPropagation ~key:("cat-close-"^c.classname) "mouseleave" (fun _ -> if not isSubCat then SidebarMsg ClearOnCategory else IgnoreMsg)
+      ; eventNoPropagation ~key:("cat-close-"^c.classname) "mouseleave" (fun _ -> if not isSubCat then SidebarMsg ResetSidebar else IgnoreMsg)
       ]
       (categoryName c.name :: entries)
   in
@@ -805,8 +805,12 @@ let update (msg : sidebarMsg) : modification =
       )
   | SetOnCategory catName ->
     ReplaceAllModificationsWithThisOne (fun m -> ({m with sidebarState = {m.sidebarState with onCategory = Some catName}}, Cmd.none))
-  | ClearOnCategory ->
-    ReplaceAllModificationsWithThisOne (fun m -> ({m with sidebarState = {m.sidebarState with onCategory = None}}, Cmd.none))
+  | ResetSidebar ->
+    Many [
+      ReplaceAllModificationsWithThisOne (Viewport.enablePan true)
+      ; ReplaceAllModificationsWithThisOne (fun m ->
+      ({m with sidebarState = {m.sidebarState with onCategory = None}}, Cmd.none))
+    ]
 
 let viewSidebar_ (m : model) : msg Html.html =
   let cats =
@@ -853,9 +857,7 @@ let viewSidebar_ (m : model) : msg Html.html =
        ; ViewUtils.eventNoPropagation ~key:"ept" "mouseenter" (fun _ ->
              EnablePanning false)
        ; ViewUtils.eventNoPropagation ~key:"epf" "mouseleave" (fun _ ->
-            if isDetailed
-            then EnablePanning true
-            else SidebarMsg ClearOnCategory
+          SidebarMsg ResetSidebar
         ) ]
        [content]
 

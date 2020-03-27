@@ -1945,9 +1945,7 @@ let update_ (msg : msg) (m : model) : modification =
       ReplaceAllModificationsWithThisOne
         (fun m -> (Handlers.setHandlerLock tlid locked m, Cmd.none))
   | EnablePanning pan ->
-      ReplaceAllModificationsWithThisOne
-        (fun m ->
-          ({m with canvasProps = {m.canvasProps with enablePan = pan}}, Cmd.none))
+      ReplaceAllModificationsWithThisOne (Viewport.enablePan pan)
   | ClipboardCopyEvent e ->
       let toast =
         ReplaceAllModificationsWithThisOne
@@ -2117,6 +2115,7 @@ let update_ (msg : msg) (m : model) : modification =
            err)
   | UploadFnAPICallback (_, Ok _) ->
       Model.updateErrorMod (Error.set "Successfully uploaded function")
+      
 
 
 let rec filter_read_only (m : model) (modification : modification) =
