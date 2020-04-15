@@ -793,12 +793,13 @@ let toHumanReadable (expr : t) : string =
           in
           let matchStrs =
             List.map matches ~f:(fun (p, e) ->
-                "(" ^ pToTestcase p ^ ", " ^ r e ^ ")")
+                iStr ^ "(" ^ pToTestcase p ^ " -> " ^ recurse ~indent:0 e ^ ")")
           in
           Printf.sprintf
-            {|(match\n%s\n%s)|}
-            (r cond)
-            (String.join ~sep:"\n" matchStrs)
+            "(match\n%s\n%s%s)"
+            (rin cond)
+            iStr
+            (String.join ~sep:("\n" ^ iStr) matchStrs)
       | ERecord (_, []) ->
           "(record)"
       | ERecord (_, pairs) ->
