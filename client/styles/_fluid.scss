@@ -400,6 +400,7 @@ $ff-color: adjust-hue($purple, -40deg);
   }
 
   .fluid-binop,
+  .fluid-lambda-arrow,
   .fluid-pipe-symbol {
     /* Fira Code renders slightly larger than Mono in some circumstances, and
      * we don't want our symbols to be taller than our text. */
